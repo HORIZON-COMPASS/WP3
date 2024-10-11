@@ -21,6 +21,7 @@ def copula_inference_Frank(copula,u,v):
 
     return sp
 
+## Define input data
 exposure_file = 'C:/HANZE2_products/Compass_exposure/National_exposure_all.xlsx'
 Fixed_asset_raw = pd.read_excel(open(exposure_file, 'rb'), sheet_name='Fixed_assets_to_GDP_raw', index_col='ISOn')
 GDPpc = pd.read_excel(open(exposure_file, 'rb'), sheet_name='GDP_per_capita_2017$', index_col='ISOn')
