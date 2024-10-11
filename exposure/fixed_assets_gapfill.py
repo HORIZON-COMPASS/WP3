@@ -40,7 +40,7 @@ Combined_data_d = Combined_data[~np.isnan(Combined_data).any(axis=1)]
 ix = (Combined_data_d>0) & (Combined_data_d<10)
 Combined_data_dz = Combined_data_d[ix.any(axis=1)]
 
-#np.savetxt('C:/HANZE2_products/Compass_exposure/Fixed_asset_GDPpc.csv', Combined_data_dz, delimiter=",", fmt="%f")
+np.savetxt('C:/HANZE2_products/Compass_exposure/Fixed_asset_GDPpc.csv', Combined_data_dz, delimiter=",", fmt="%f")
 
 ### Fit Gumbel copula to the data
 Combined_data_ranked = rankdata(Combined_data_dz, method='min', axis=0) / (Combined_data_dz.shape[0] + 1)
