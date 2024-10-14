@@ -39,7 +39,7 @@ for y in years:
                     'data_format': 'grib',
                     'download_format': 'unarchived',
                 },
-                '/p/tmp/dominikp/COMPASS/Meteo_data/Wind_ERA5Land/ERA5Land_sfcWind_'+str(y)+'_'+str(m)+'.grib').download()
+                '/p/tmp/dominikp/COMPASS/Meteo_data/Wind_ERA5Land/ERA5Land_sfcWind_'+str(y)+'_'+str(m)+'.grib')
 
         ## additional ERA5 data for gap-filling in coastal areas
         if os.path.isfile('/p/tmp/dominikp/COMPASS/Meteo_data/Wind_ERA5/ERA5_sfcWind_'+str(y)+'_'+str(m)+'.grib'):
@@ -72,4 +72,4 @@ for y in years:
                     'data_format': 'grib',
                     'download_format': 'unarchived',
                 },
-                '/p/tmp/dominikp/COMPASS/Meteo_data/Wind_ERA5/ERA5_sfcWind_'+str(y)+'_'+str(m)+'.grib').download()
+                '/p/tmp/dominikp/COMPASS/Meteo_data/Wind_ERA5/ERA5_sfcWind_'+str(y)+'_'+str(m)+'.grib')
