@@ -3,14 +3,14 @@ import os
 
 c = cdsapi.Client()
 
-years = range(1950,2024)
+years = range(1956,2024)
 months = range(1,13)
 
 for y in years:
     for m in months:
 
         ## ERA5-Land
-        if os.path.isfile('/p/tmp/dominikp/COMPASS/Meteo_data/Wind_ERA5Land/ERA5Land_sfcWind_'+str(y)+'_'+str(m)+'.grib'):
+        if os.path.isfile('/p/tmp/dominikp/COMPASS/Meteo_data/Wind_ERA5Land/ERA5Land_sfcWind_'+str(y)+'.grib'):
             print('Already downloaded')
         else:
             c.retrieve(
@@ -20,7 +20,10 @@ for y in years:
                         '10m_u_component_of_wind', '10m_v_component_of_wind'
                     ],
                     'year': str(y),
-                    'month': str(m),
+                    'month': [
+                        '01', '02', '03', '04', '05', '06', '07', '08', '09',
+                        '10', '11', '12'
+                    ],
                     'day': [
                         '01', '02', '03', '04', '05', '06', '07', '08', '09',
                         '10', '11', '12', '13', '14', '15', '16', '17', '18',
@@ -39,10 +42,10 @@ for y in years:
                     'data_format': 'grib',
                     'download_format': 'unarchived',
                 },
-                '/p/tmp/dominikp/COMPASS/Meteo_data/Wind_ERA5Land/ERA5Land_sfcWind_'+str(y)+'_'+str(m)+'.grib')
+                '/p/tmp/dominikp/COMPASS/Meteo_data/Wind_ERA5Land/ERA5Land_sfcWind_'+str(y)+'.grib')
 
         ## additional ERA5 data for gap-filling in coastal areas
-        if os.path.isfile('/p/tmp/dominikp/COMPASS/Meteo_data/Wind_ERA5/ERA5_sfcWind_'+str(y)+'_'+str(m)+'.grib'):
+        if os.path.isfile('/p/tmp/dominikp/COMPASS/Meteo_data/Wind_ERA5/ERA5_sfcWind_'+str(y)+'.grib'):
             print('Already downloaded')
         else:
             c.retrieve(
@@ -53,7 +56,10 @@ for y in years:
                         '10m_u_component_of_wind', '10m_v_component_of_wind',
                     ],
                     'year': str(y),
-                    'month': str(m),
+                    'month': [
+                        '01', '02', '03', '04', '05', '06', '07', '08', '09',
+                        '10', '11', '12'
+                    ],
                     'day': [
                         '01', '02', '03', '04', '05', '06', '07', '08', '09',
                         '10', '11', '12', '13', '14', '15', '16', '17', '18',
@@ -72,4 +78,4 @@ for y in years:
                     'data_format': 'grib',
                     'download_format': 'unarchived',
                 },
-                '/p/tmp/dominikp/COMPASS/Meteo_data/Wind_ERA5/ERA5_sfcWind_'+str(y)+'_'+str(m)+'.grib')
+                '/p/tmp/dominikp/COMPASS/Meteo_data/Wind_ERA5/ERA5_sfcWind_'+str(y)+'.grib')
