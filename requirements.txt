@@ -1,13 +1,13 @@
 attrs==24.2.0
-cads-api-client==1.4.5
-cdsapi==0.7.3
+cads-api-client==1.4.7
+cdsapi==0.7.4
 certifi==2024.8.30
 charset-normalizer==3.4.0
 colorama==0.4.6
 copulas==0.11.1
 et-xmlfile==1.1.0
 idna==3.10
-multiurl==0.3.1
+multiurl==0.3.2
 numpy==2.1.2
 openpyxl==3.1.5
 packaging==24.1
