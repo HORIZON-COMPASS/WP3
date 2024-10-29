@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from exposure_functions import copula_inference_Frank, copula_fit_frank, prepare_fixed_asset_data
+from exposure_functions import copula_fit_frank, prepare_fixed_asset_data, fixed_asset_estimate
 from scipy.interpolate import interp1d
 
 ## PARAMETRS
@@ -18,6 +18,7 @@ Pop_hist = pd.read_excel(open(National_data_hist_file, 'rb'), sheet_name='Popula
 Countries = range(0,248)
 Years_hist_pop = list(range(1850,Last_hist_year_pop+1))
 Years_hist_eco = list(range(1850,Last_hist_year_eco+1))
+Years_all = list(range(1850,2101))
 
 ## Input UN WPP2024 projections
 National_data_wpp_file = 'C:/HANZE2_products/Compass_exposure/UN_PPP2024_Output_PopTot.xlsx'
@@ -38,9 +39,9 @@ SSPs = np.arange(1,6)
 Years_ssp = np.arange(2020,2101)
 Years_ssp_5yr = list(range(2020,2105,5))
 
-# ## Fixed asset data gapfilling
-# Combined_data_dz = prepare_fixed_asset_data(Fixed_asset_raw, GDPpc_hist)
-# copula_assets, copula_samples = copula_fit_frank(Combined_data_dz)
+## Fixed asset data gapfilling
+Combined_data_dz = prepare_fixed_asset_data(FA_raw, GDPpc_hist)
+copula_assets, copula_samples = copula_fit_frank(Combined_data_dz)
 
 ## combine national timeseries
 Pop_combined = np.ones([5, len(Countries), len(range(1850,2101))]) * -1
@@ -58,6 +59,7 @@ for kc, c in enumerate(Pop_hist.index):
     if sum(C_Pop_hist)==0:
         Pop_combined[:, kc, :] = 0
         GDP_combined[:, kc, :] = 0
+        FA_combined[:, kc, :] = 0
         continue
 
     # extract country data series for SSPs
@@ -134,10 +136,11 @@ for kc, c in enumerate(Pop_hist.index):
         GDP_combined[s, kc, Data_avail_GDP - 1:] = C_GDP_SSP[s, Data_avail_GDP - 171:] * SSP_GDP_offset
 
         # Fixed assets
-        b=1
-    a=1
+        GDPpc_combined_c_s = GDP_combined[s, kc, :] / Pop_combined[s, kc, :] * 1E6
+        C_FA_estimate = fixed_asset_estimate(C_FA_raw, copula_assets, copula_samples, GDPpc_combined_c_s, Years_all)
+        FA_combined[s, kc, :] = GDP_combined[s, kc, :] * C_FA_estimate
 
-Years_all = list(range(1850,2101))
+# save timeseries
 for s in range(0,5):
     Pop_combined_df = pd.DataFrame(data=Pop_combined[s, :, :], columns=Years_all,index=Pop_hist.index)
     Pop_combined_dff = pd.concat([Pop_hist[['ISO3']], Pop_combined_df], axis=1)
@@ -145,3 +148,6 @@ for s in range(0,5):
     GDP_combined_df = pd.DataFrame(data=GDP_combined[s, :, :], columns=Years_all,index=Pop_hist.index)
     GDP_combined_dff = pd.concat([Pop_hist[['ISO3']], GDP_combined_df], axis=1)
     GDP_combined_dff.to_csv('C:/HANZE2_products/Compass_exposure/GDP_combined_SSP'+str(s+1)+'_'+Harmonize+'.csv', sep=',')
+    FA_combined_df = pd.DataFrame(data=FA_combined[s, :, :], columns=Years_all,index=Pop_hist.index)
+    FA_combined_dff = pd.concat([Pop_hist[['ISO3']], FA_combined_df], axis=1)
+    FA_combined_dff.to_csv('C:/HANZE2_products/Compass_exposure/FA_combined_SSP'+str(s+1)+'_'+Harmonize+'.csv', sep=',')

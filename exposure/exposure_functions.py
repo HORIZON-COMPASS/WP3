@@ -51,3 +51,28 @@ def copula_inference_Frank(copula,u,v):
     sp = np.interp(f, Y[:,0], Y[:,1])
 
     return sp
+
+def fixed_asset_estimate(Fixed_asset_orig, copula_assets, copula_samples, GDPpc_all, Years):
+
+    Fixed_asset_raw = np.concatenate([Fixed_asset_orig,[np.nan] * (len(Years)-len(Fixed_asset_orig))])
+    Fixed_asset_pred = np.zeros([len(Years)])
+    Fixed_asset_pred_c = np.zeros([len(Years)])
+    for y in Years:
+        GDPpc_cy = GDPpc_all[y-1850]
+        Fixed_asset_pred_c[y-1850] = np.mean(copula_inference_Frank(copula_assets, copula_samples, GDPpc_cy))
+    asset_avail = ~np.isnan(Fixed_asset_raw.astype('float64'))
+    if sum(asset_avail)==0:
+        Fixed_asset_pred = Fixed_asset_pred_c
+    else:
+        Fixed_asset_pred[asset_avail] = Fixed_asset_raw[asset_avail]
+        Index_first = np.where(asset_avail == 1)[0][0]
+        Index_last = np.where(asset_avail == 1)[0][-1]
+        Fixed_asset_first = Fixed_asset_raw[Index_first]
+        Fixed_asset_last = Fixed_asset_raw[Index_last]
+        Fixed_asset_pred[0:Index_first] = Fixed_asset_pred_c[0:Index_first] * Fixed_asset_first / Fixed_asset_pred_c[Index_first]
+        Fixed_asset_pred[Index_last:] = Fixed_asset_pred_c[Index_last:] * Fixed_asset_last / Fixed_asset_pred_c[Index_last]
+
+    Fixed_asset_pred[np.isnan(Fixed_asset_pred)] = 0
+
+    return Fixed_asset_pred
+
