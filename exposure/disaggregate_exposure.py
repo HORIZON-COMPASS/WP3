@@ -8,6 +8,7 @@ Harmonize = 'yes'
 Last_hist_year_pop = 2023 # last year of historical population data
 Last_hist_year_eco = 2022 # last year of historical economic data
 Last_weo_year = 2029 # last year for which WEO projections are available
+Base_SSP_year = 2020 # base year of SSP projections
 
 ## Input national timeseries historical
 National_data_hist_file = 'C:/HANZE2_products/Compass_exposure/National_exposure_all.xlsx'
@@ -34,8 +35,7 @@ National_data_ssp_file = 'C:/HANZE2_products/Compass_exposure/SSP_3_1_main_drive
 National_data_ssp = pd.read_excel(open(National_data_ssp_file, 'rb'), sheet_name='Data_select')
 SSP_ISO_reference = pd.read_excel(open(National_data_ssp_file, 'rb'), sheet_name='SSP_ISO_reference', index_col='ISOn')
 SSPs = np.arange(1,6)
-Years_ssp_pop = np.arange(2020,2101)
-Years_ssp_eco = np.arange(2020,2101)
+Years_ssp = np.arange(2020,2101)
 Years_ssp_5yr = list(range(2020,2105,5))
 
 # ## Fixed asset data gapfilling
@@ -57,6 +57,7 @@ for kc, c in enumerate(Pop_hist.index):
     # omit uninhabited territories
     if sum(C_Pop_hist)==0:
         Pop_combined[:, kc, :] = 0
+        GDP_combined[:, kc, :] = 0
         continue
 
     # extract country data series for SSPs
@@ -66,22 +67,22 @@ for kc, c in enumerate(Pop_hist.index):
                                           (National_data_ssp['Variable']=='Population') &
                                           (National_data_ssp['Scenario']!='Historical Reference'), Years_ssp_5yr]
     # change rate relative to 2020
-    C_Pop_SSP = interp1d(Years_ssp_5yr,C_Pop_SSP_5yr)(Years_ssp_pop) / C_Pop_SSP_5yr.values[0, 0] * C_Pop_hist[170]
+    C_Pop_SSP = interp1d(Years_ssp_5yr,C_Pop_SSP_5yr)(Years_ssp) / C_Pop_SSP_5yr.values[0, 0] * C_Pop_hist[Base_SSP_year - 1850]
     # GDP from SSPs (OECD or IIASA projection)
     if SSP_GDP_reference=='IIASA':
         C_GDPpc_SSP_5yr = National_data_ssp.loc[(National_data_ssp['Region'] == SSP_Pop_reference) &
                                                 (National_data_ssp['Variable'] == 'GDP|PPP [per capita]_IIASA'),
                                                 Years_ssp_5yr[1:]]
         # change rate relative to 2020
-        C_GDPpc_SSP = (interp1d(Years_ssp_5yr[1:], C_GDPpc_SSP_5yr, fill_value='extrapolate')(Years_ssp_eco) /
-                       np.mean(C_GDPpc_SSP_5yr[2025].values))
+        C_GDPpc_SSP = (interp1d(Years_ssp_5yr[1:], C_GDPpc_SSP_5yr, fill_value='extrapolate')(Years_ssp) /
+                       np.mean(C_GDPpc_SSP_5yr[2025].values)) * C_GDPpc_hist[Base_SSP_year - 1850]
     else:
         C_GDPpc_SSP_5yr = National_data_ssp.loc[(National_data_ssp['Region'] == SSP_GDP_reference) &
                                                 (National_data_ssp['Variable'] == 'GDP|PPP [per capita]') &
                                                 (National_data_ssp['Scenario'] != 'Historical Reference'),
                                                 Years_ssp_5yr]
         # change rate relative to 2020
-        C_GDPpc_SSP = interp1d(Years_ssp_5yr, C_GDPpc_SSP_5yr)(Years_ssp_eco) / C_GDPpc_SSP_5yr.values[0, 0]
+        C_GDPpc_SSP = interp1d(Years_ssp_5yr, C_GDPpc_SSP_5yr)(Years_ssp) / C_GDPpc_SSP_5yr.values[0, 0] * C_GDPpc_hist[Base_SSP_year - 1850]
 
     # WEO projection, if used for harmonization
     C_GDPpc_WEO_change = np.concatenate(([1], [np.nan] * (len(Years_weo)-1)))
@@ -120,12 +121,20 @@ for kc, c in enumerate(Pop_hist.index):
         # SSP population
         Data_avail_pop = sum(Pop_combined[s, kc, :] >= 0)
         SSP_Pop_diff = Pop_combined[s, kc, Data_avail_pop-1] / C_Pop_SSP[s, Data_avail_pop-171]
-        SSP_offset = interp1d([Data_avail_pop+1849, 2100], [SSP_Pop_diff,1])(Years_ssp_pop[Data_avail_pop-171:])
-        Pop_combined[s, kc, Data_avail_pop-1:] = C_Pop_SSP[s, Data_avail_pop-171:] * SSP_offset
+        SSP_Pop_offset = interp1d([Data_avail_pop + 1849, 2100], [SSP_Pop_diff, 1])(
+                            Years_ssp[Data_avail_pop - 171:])
+        Pop_combined[s, kc, Data_avail_pop-1:] = C_Pop_SSP[s, Data_avail_pop-171:] * SSP_Pop_offset
 
         # SSP GDP
-        Data_avail_GDP = sum(GDP_combined[s, kc, :] > 0)
+        Data_avail_GDP = sum(GDP_combined[s, kc, :] >= 0)
+        C_GDP_SSP = C_GDPpc_SSP * Pop_combined[s, kc, 170:] / 1E6
+        SSP_GDP_diff = GDP_combined[s, kc, Data_avail_GDP - 1] / C_GDP_SSP[s, Data_avail_GDP - 171]
+        SSP_GDP_offset = interp1d([Data_avail_GDP + 1849, 2100], [SSP_GDP_diff, 1])(
+                            Years_ssp[Data_avail_GDP - 171:])
+        GDP_combined[s, kc, Data_avail_GDP - 1:] = C_GDP_SSP[s, Data_avail_GDP - 171:] * SSP_GDP_offset
 
+        # Fixed assets
+        b=1
     a=1
 
 Years_all = list(range(1850,2101))
@@ -133,3 +142,6 @@ for s in range(0,5):
     Pop_combined_df = pd.DataFrame(data=Pop_combined[s, :, :], columns=Years_all,index=Pop_hist.index)
     Pop_combined_dff = pd.concat([Pop_hist[['ISO3']], Pop_combined_df], axis=1)
     Pop_combined_dff.to_csv('C:/HANZE2_products/Compass_exposure/Pop_combined_SSP'+str(s+1)+'_'+Harmonize+'.csv', sep=',')
+    GDP_combined_df = pd.DataFrame(data=GDP_combined[s, :, :], columns=Years_all,index=Pop_hist.index)
+    GDP_combined_dff = pd.concat([Pop_hist[['ISO3']], GDP_combined_df], axis=1)
+    GDP_combined_dff.to_csv('C:/HANZE2_products/Compass_exposure/GDP_combined_SSP'+str(s+1)+'_'+Harmonize+'.csv', sep=',')
