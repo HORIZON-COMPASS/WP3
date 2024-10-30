@@ -9,9 +9,10 @@ Last_hist_year_pop = 2023 # last year of historical population data
 Last_hist_year_eco = 2022 # last year of historical economic data
 Last_weo_year = 2029 # last year for which WEO projections are available
 Base_SSP_year = 2020 # base year of SSP projections
+Compass_path = 'C:/HANZE2_products/Compass_exposure/'
 
 ## Input national timeseries historical
-National_data_hist_file = 'C:/HANZE2_products/Compass_exposure/National_exposure_all.xlsx'
+National_data_hist_file = Compass_path + 'National_exposure_all.xlsx'
 FA_raw = pd.read_excel(open(National_data_hist_file, 'rb'), sheet_name='Fixed_assets_to_GDP_raw', index_col='ISOn')
 GDPpc_hist = pd.read_excel(open(National_data_hist_file, 'rb'), sheet_name='GDP_per_capita_2017$', index_col='ISOn')
 Pop_hist = pd.read_excel(open(National_data_hist_file, 'rb'), sheet_name='Population', index_col='ISOn')
@@ -21,18 +22,18 @@ Years_hist_eco = list(range(1850,Last_hist_year_eco+1))
 Years_all = list(range(1850,2101))
 
 ## Input UN WPP2024 projections
-National_data_wpp_file = 'C:/HANZE2_products/Compass_exposure/UN_PPP2024_Output_PopTot.xlsx'
+National_data_wpp_file = Compass_path + 'UN_PPP2024_Output_PopTot.xlsx'
 Pop_wpp = pd.read_excel(open(National_data_wpp_file, 'rb'), sheet_name='Median', header=16, index_col='Location code')
 Years_wpp = list(np.arange(Last_hist_year_pop+1, Last_weo_year+1))
 
 ## Input IMF WEO projections
-National_data_weo_file = 'C:/HANZE2_products/Compass_exposure/WEOOct2024all.xlsx'
+National_data_weo_file = Compass_path + 'WEOOct2024all.xlsx'
 National_data_weo = pd.read_excel(open(National_data_weo_file, 'rb'), sheet_name='WEOOct2024all')
 Years_weo = list(np.arange(Last_hist_year_eco, Last_weo_year+1))
 GDPpc_weo = National_data_weo.loc[National_data_weo['Units'] == 'Purchasing power parity; 2017 international dollar',]
 
 ## Input national SSP projections
-National_data_ssp_file = 'C:/HANZE2_products/Compass_exposure/SSP_3_1_main_drivers.xlsx'
+National_data_ssp_file = Compass_path + 'SSP_3_1_main_drivers.xlsx'
 National_data_ssp = pd.read_excel(open(National_data_ssp_file, 'rb'), sheet_name='Data_select')
 SSP_ISO_reference = pd.read_excel(open(National_data_ssp_file, 'rb'), sheet_name='SSP_ISO_reference', index_col='ISOn')
 SSPs = np.arange(1,6)
@@ -144,10 +145,10 @@ for kc, c in enumerate(Pop_hist.index):
 for s in range(0,5):
     Pop_combined_df = pd.DataFrame(data=Pop_combined[s, :, :], columns=Years_all,index=Pop_hist.index)
     Pop_combined_dff = pd.concat([Pop_hist[['ISO3']], Pop_combined_df], axis=1)
-    Pop_combined_dff.to_csv('C:/HANZE2_products/Compass_exposure/Pop_combined_SSP'+str(s+1)+'_'+Harmonize+'.csv', sep=',')
+    Pop_combined_dff.to_csv(Compass_path + 'Pop_combined_SSP'+str(s+1)+'_'+Harmonize+'.csv', sep=',')
     GDP_combined_df = pd.DataFrame(data=GDP_combined[s, :, :], columns=Years_all,index=Pop_hist.index)
     GDP_combined_dff = pd.concat([Pop_hist[['ISO3']], GDP_combined_df], axis=1)
-    GDP_combined_dff.to_csv('C:/HANZE2_products/Compass_exposure/GDP_combined_SSP'+str(s+1)+'_'+Harmonize+'.csv', sep=',')
+    GDP_combined_dff.to_csv(Compass_path + 'GDP_combined_SSP'+str(s+1)+'_'+Harmonize+'.csv', sep=',')
     FA_combined_df = pd.DataFrame(data=FA_combined[s, :, :], columns=Years_all,index=Pop_hist.index)
     FA_combined_dff = pd.concat([Pop_hist[['ISO3']], FA_combined_df], axis=1)
-    FA_combined_dff.to_csv('C:/HANZE2_products/Compass_exposure/FA_combined_SSP'+str(s+1)+'_'+Harmonize+'.csv', sep=',')
+    FA_combined_dff.to_csv(Compass_path + 'FA_combined_SSP'+str(s+1)+'_'+Harmonize+'.csv', sep=',')

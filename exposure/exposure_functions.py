@@ -1,6 +1,7 @@
-import pandas as pd
 import numpy as np
+import rasterio, os
 from copulas.bivariate import Frank
+from rasterio.windows import Window
 from scipy.stats import rankdata, spearmanr
 
 def prepare_fixed_asset_data(Fixed_asset_raw, GDPpc):
@@ -76,3 +77,46 @@ def fixed_asset_estimate(Fixed_asset_orig, copula_assets, copula_samples, GDPpc_
 
     return Fixed_asset_pred
 
+def write_empty_raster(variant, profile, filename, data_type, dimensions):
+
+    mode = 'w'
+    ext = '.tif'
+
+    full_filename = filename + str(variant) + ext
+    if os.path.isfile(full_filename):
+        #os.remove(full_filename)
+        print(full_filename + " already exists")
+    else:
+        empty_data = np.zeros(dimensions, dtype = data_type)
+        with rasterio.Env():
+            with rasterio.open(filename + str(variant) + ext, mode, **profile) as dst:
+                dst.write(empty_data, 1)
+
+def load_country_mask(NUTS2010, region, nuts_dataset):
+
+    EXT_MIN_X = NUTS2010['EXT_MIN_X'][region]
+    EXT_MAX_X = NUTS2010['EXT_MAX_X'][region]
+    EXT_MIN_Y = NUTS2010['EXT_MIN_Y'][region]
+    EXT_MAX_Y = NUTS2010['EXT_MAX_Y'][region]
+    gridcode = NUTS2010['gridcode'][region]
+
+    # find the NUTS region in the raster
+    start_grid_x = (EXT_MIN_X - 2636000) / 100
+    start_grid_y = 40300 - (EXT_MAX_Y - 1386000) / 100
+    extent_x = (EXT_MAX_X - EXT_MIN_X) / 100
+    extent_y = (EXT_MAX_Y - EXT_MIN_Y) / 100
+    location = [start_grid_x, start_grid_y, extent_x, extent_y]
+    nuts_region = nuts_dataset.read(1, window=Window(start_grid_x, start_grid_y, extent_x, extent_y))
+    # find grid cells specific for the NUTS region
+    region_mask = nuts_region == gridcode
+
+    return region_mask, location
+
+# helper for loading and masking raster for a NUTS region
+def load_dataset_by_country(dataset, location, region_mask, distance_adjust):
+    read_dataset = dataset.read(1, window=Window(location[0], location[1], location[2], location[3]))
+    if distance_adjust == 1:
+        read_dataset[read_dataset < 0] = read_dataset.max()
+    read_dataset[~region_mask] = 0
+    read_dataset[read_dataset < 0] = 0
+    return read_dataset
