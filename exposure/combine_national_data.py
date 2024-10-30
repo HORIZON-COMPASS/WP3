@@ -45,6 +45,7 @@ copula_assets, copula_samples = copula_fit_frank(Combined_data_dz)
 
 ## combine national timeseries
 Pop_combined = np.ones([5, len(Countries), len(range(1850,2101))]) * -1
+GDPpc_combined = np.ones([5, len(Countries), len(range(1850,2101))]) * -1
 GDP_combined = np.ones([5, len(Countries), len(range(1850,2101))]) * -1
 FA_combined = np.ones([5, len(Countries), len(range(1850,2101))]) * -1
 for kc, c in enumerate(Pop_hist.index):
@@ -112,13 +113,12 @@ for kc, c in enumerate(Pop_hist.index):
         hist_column_eco = len(Years_hist_eco)
         # historical data
         Pop_combined[s, kc, :hist_column_pop] = C_Pop_hist
-        GDP_combined[s, kc, :hist_column_eco] = Pop_combined[s, kc, :hist_column_eco] * C_GDPpc_hist / 1E6
+        GDPpc_combined[s, kc, :hist_column_eco] = C_GDPpc_hist
 
         # Add UN and WEO projections for harmonization, if enabled
         Pop_combined[s, kc, hist_column_pop:hist_column_pop+len(Years_wpp)] = C_Pop_wpp
         C_GDPpc_WEO_harm = C_GDPpc_hist[hist_column_eco-1] * C_GDPpc_WEO_change
-        C_GDP_WEO_harm = C_GDPpc_WEO_harm * Pop_combined[s, kc, hist_column_eco-1:hist_column_eco+len(Years_weo)-1] / 1E6
-        GDP_combined[s, kc, hist_column_eco-1:hist_column_eco+len(Years_weo)-1] = C_GDP_WEO_harm
+        GDPpc_combined[s, kc, hist_column_eco-1:hist_column_eco+len(Years_weo)-1] = C_GDPpc_WEO_harm
 
         # SSP population
         Data_avail_pop = sum(Pop_combined[s, kc, :] >= 0)
@@ -128,16 +128,16 @@ for kc, c in enumerate(Pop_hist.index):
         Pop_combined[s, kc, Data_avail_pop-1:] = C_Pop_SSP[s, Data_avail_pop-171:] * SSP_Pop_offset
 
         # SSP GDP
-        Data_avail_GDP = sum(GDP_combined[s, kc, :] >= 0)
-        C_GDP_SSP = C_GDPpc_SSP * Pop_combined[s, kc, 170:] / 1E6
-        SSP_GDP_diff = GDP_combined[s, kc, Data_avail_GDP - 1] / C_GDP_SSP[s, Data_avail_GDP - 171]
+        Data_avail_GDP = sum(GDPpc_combined[s, kc, :] >= 0)
+        SSP_GDP_diff = GDPpc_combined[s, kc, Data_avail_GDP - 1] / C_GDPpc_SSP[s, Data_avail_GDP - 171]
         SSP_GDP_offset = interp1d([Data_avail_GDP + 1849, 2100], [SSP_GDP_diff, 1])(
                             Years_ssp[Data_avail_GDP - 171:])
-        GDP_combined[s, kc, Data_avail_GDP - 1:] = C_GDP_SSP[s, Data_avail_GDP - 171:] * SSP_GDP_offset
+        GDPpc_combined[s, kc, Data_avail_GDP - 1:] = C_GDPpc_SSP[s, Data_avail_GDP - 171:] * SSP_GDP_offset
 
         # Fixed assets
-        GDPpc_combined_c_s = GDP_combined[s, kc, :] / Pop_combined[s, kc, :] * 1E6
+        GDPpc_combined_c_s = GDPpc_combined[s, kc, :]
         C_FA_estimate = fixed_asset_estimate(C_FA_raw, copula_assets, copula_samples, GDPpc_combined_c_s, Years_all)
+        GDP_combined[s, kc, :] = GDPpc_combined[s, kc, :] * Pop_combined[s, kc, :] / 1E6
         FA_combined[s, kc, :] = GDP_combined[s, kc, :] * C_FA_estimate
 
 # save timeseries
