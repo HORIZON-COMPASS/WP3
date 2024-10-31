@@ -100,11 +100,11 @@ def load_country_mask(country_vector, c, country_dataset):
 
     # find the country in the raster
     res = country_dataset.res[0]
-    start_grid_x = np.floor(EXT_MIN_X / res) - 1
-    start_grid_y = np.floor(country_dataset.shape[0] - EXT_MAX_Y / res) - 1
-    extent_x = np.ceil((EXT_MAX_X - EXT_MIN_X) / res) + 1
-    extent_y = np.ceil((EXT_MAX_Y - EXT_MIN_Y) / res) + 1
-    location = [start_grid_x, start_grid_y, extent_x, extent_y]
+    start_grid_x = np.floor(EXT_MIN_X / res)
+    start_grid_y = np.floor(country_dataset.shape[0] - EXT_MAX_Y / res)
+    extent_x = np.ceil((EXT_MAX_X - EXT_MIN_X) / res)
+    extent_y = np.ceil((EXT_MAX_Y - EXT_MIN_Y) / res)
+    location = np.concatenate([start_grid_x, start_grid_y, extent_x, extent_y])
     country = country_dataset.read(1, window=Window(start_grid_x, start_grid_y, extent_x, extent_y))
     # find grid cells specific for the country
     country_mask = country == c
