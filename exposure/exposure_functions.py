@@ -77,46 +77,66 @@ def fixed_asset_estimate(Fixed_asset_orig, copula_assets, copula_samples, GDPpc_
 
     return Fixed_asset_pred
 
-def write_empty_raster(variant, profile, filename, data_type, dimensions):
+def write_empty_raster(profile, full_filename, data_type, dimensions):
 
     mode = 'w'
-    ext = '.tif'
 
-    full_filename = filename + str(variant) + ext
     if os.path.isfile(full_filename):
         #os.remove(full_filename)
         print(full_filename + " already exists")
     else:
         empty_data = np.zeros(dimensions, dtype = data_type)
         with rasterio.Env():
-            with rasterio.open(filename + str(variant) + ext, mode, **profile) as dst:
+            with rasterio.open(full_filename, mode, **profile) as dst:
                 dst.write(empty_data, 1)
 
-def load_country_mask(NUTS2010, region, nuts_dataset):
+def load_country_mask(country_vector, c, country_dataset):
 
-    EXT_MIN_X = NUTS2010['EXT_MIN_X'][region]
-    EXT_MAX_X = NUTS2010['EXT_MAX_X'][region]
-    EXT_MIN_Y = NUTS2010['EXT_MIN_Y'][region]
-    EXT_MAX_Y = NUTS2010['EXT_MAX_Y'][region]
-    gridcode = NUTS2010['gridcode'][region]
+    country_vector_sel = country_vector.loc[country_vector['ISOnum']==c,]
+    EXT_MIN_X = country_vector_sel['EXT_MIN_X'].values - country_dataset.bounds.left
+    EXT_MAX_X = country_vector_sel['EXT_MAX_X'].values - country_dataset.bounds.left
+    EXT_MIN_Y = country_vector_sel['EXT_MIN_Y'].values - country_dataset.bounds.bottom
+    EXT_MAX_Y = country_vector_sel['EXT_MAX_Y'].values - country_dataset.bounds.bottom
 
-    # find the NUTS region in the raster
-    start_grid_x = (EXT_MIN_X - 2636000) / 100
-    start_grid_y = 40300 - (EXT_MAX_Y - 1386000) / 100
-    extent_x = (EXT_MAX_X - EXT_MIN_X) / 100
-    extent_y = (EXT_MAX_Y - EXT_MIN_Y) / 100
+    # find the country in the raster
+    res = country_dataset.res[0]
+    start_grid_x = np.floor(EXT_MIN_X / res) - 1
+    start_grid_y = np.floor(country_dataset.shape[0] - EXT_MAX_Y / res) - 1
+    extent_x = np.ceil((EXT_MAX_X - EXT_MIN_X) / res) + 1
+    extent_y = np.ceil((EXT_MAX_Y - EXT_MIN_Y) / res) + 1
     location = [start_grid_x, start_grid_y, extent_x, extent_y]
-    nuts_region = nuts_dataset.read(1, window=Window(start_grid_x, start_grid_y, extent_x, extent_y))
-    # find grid cells specific for the NUTS region
-    region_mask = nuts_region == gridcode
+    country = country_dataset.read(1, window=Window(start_grid_x, start_grid_y, extent_x, extent_y))
+    # find grid cells specific for the country
+    country_mask = country == c
 
-    return region_mask, location
+    return country_mask, location
 
 # helper for loading and masking raster for a NUTS region
-def load_dataset_by_country(dataset, location, region_mask, distance_adjust):
-    read_dataset = dataset.read(1, window=Window(location[0], location[1], location[2], location[3]))
-    if distance_adjust == 1:
-        read_dataset[read_dataset < 0] = read_dataset.max()
-    read_dataset[~region_mask] = 0
+def load_dataset_by_country(dataset, location, country_mask):
+
+    col_off = location[0]
+    row_off = location[1]
+    width = location[2]
+    height = location[3]
+
+    read_dataset = dataset.read(1, window=Window(col_off, row_off, width, height))
+    read_dataset[~country_mask] = 0
     read_dataset[read_dataset < 0] = 0
+
     return read_dataset
+
+def save_raster_data(path_and_name, location, region_mask, raster_dataset):
+
+    col_off = location[0]
+    row_off = location[1]
+    width = location[2]
+    height = location[3]
+
+    raster_dataset_year = rasterio.open(path_and_name)
+    read_dataset_year = raster_dataset_year.read(1, window=Window(col_off, row_off, width, height))
+    read_dataset_year[region_mask] = raster_dataset[region_mask]
+    profile = raster_dataset_year.profile
+    raster_dataset_year.close()
+    with rasterio.open(path_and_name, 'r+', **profile) as dst:
+        dst.write(read_dataset_year, window=Window(col_off, row_off, width, height), indexes=1)
+    raster_dataset_year.close()
