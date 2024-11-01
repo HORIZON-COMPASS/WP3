@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import rasterio
 import geopandas as gp
-from exposure_functions import write_empty_raster, load_country_mask, load_dataset_by_country, save_raster_data
+from exposure_functions import (write_empty_raster, load_country_mask, save_raster_data,
+                                load_ghsl_data)
 
 ## PARAMETERS
 Harmonize = 'yes'
@@ -18,7 +19,7 @@ Year_ssp_harm = list(range(Last_hist_year+1,2101))
 Year_ssp_noharm = list(range(2021,2101))
 Year_ghsl = np.arange(1975,2035,5)
 
-# Load national exposure data (historical)
+# Load national exposure data
 Pop_data = dict()
 GDP_data = dict()
 FA_data = dict()
@@ -35,51 +36,28 @@ for s in np.arange(0,5):
 country_dataset = rasterio.open(Compass_path + 'OSM_country_map.tif')
 country_vector = gp.read_file('C:/HANZE2_rawdata/Admin/Global_OSM_boundaries_2024_v4.shp')
 
+# load one of the GHSL dataset to get the raster profile
+ghsl_dataset = rasterio.open(Raster_path + 'GHSL/GHS_POP_E1975_GLOBE_R2023A_4326_30ss_V1_0.tif')
+
 # test
 hyde_dataset = rasterio.open(Raster_path + 'HYDE/zip/popc_1980AD.asc') # offset: left: 1 top: 108 right: 1 bottom: 198
 
 # create disaggregation
 dims = [country_dataset.height, country_dataset.width]
-for year in Years_all[195:196]:
+for year in Years_all[127:128]:
     print(str(year))
 
-    # Load GHSL data
-    ghsl_pop_dataset_h = ''
-    ghsl_bld_dataset_h = ''
-    year_l = ''
-    year_h = ''
-    interp = 0
-    if (year > 1975) & (year < 2030):
-        if year in Year_ghsl:
-            ghsl_pop_dataset = rasterio.open(Raster_path + 'GHSL/GHS_POP_E'+str(year)+'_GLOBE_R2023A_4326_30ss_V1_0.tif')
-            ghsl_bld_dataset = rasterio.open(Raster_path + 'GHSL/GHS_BUILT_S_E' + str(year) + '_GLOBE_R2023A_4326_30ss_V1_0.tif')
-        else:
-            # if year is between GHSL dataset, load upper and lower datasets for interpolation
-            interp = 1
-            year_l = max(Year_ghsl[Year_ghsl < year])
-            year_h = min(Year_ghsl[Year_ghsl > year])
-            ghsl_pop_dataset = rasterio.open(Raster_path + 'GHSL/GHS_POP_E'+str(year_l)+'_GLOBE_R2023A_4326_30ss_V1_0.tif')
-            ghsl_bld_dataset = rasterio.open(Raster_path + 'GHSL/GHS_BUILT_S_E' + str(year_l) + '_GLOBE_R2023A_4326_30ss_V1_0.tif')
-            ghsl_pop_dataset_h = rasterio.open(Raster_path + 'GHSL/GHS_POP_E'+str(year_h)+'_GLOBE_R2023A_4326_30ss_V1_0.tif')
-            ghsl_bld_dataset_h = rasterio.open(Raster_path + 'GHSL/GHS_BUILT_S_E' + str(year_h) + '_GLOBE_R2023A_4326_30ss_V1_0.tif')
-    elif year <= 1975:
-        # Use 1975 dataset for 1850-1975
-        ghsl_pop_dataset = rasterio.open(Raster_path + 'GHSL/GHS_POP_E1975_GLOBE_R2023A_4326_30ss_V1_0.tif')
-        ghsl_bld_dataset = rasterio.open(Raster_path + 'GHSL/GHS_BUILT_S_E1975_GLOBE_R2023A_4326_30ss_V1_0.tif')
-    else:
-        # Use 2030 dataset for 2030-2100
-        ghsl_pop_dataset = rasterio.open(Raster_path + 'GHSL/GHS_POP_E2030_GLOBE_R2023A_4326_30ss_V1_0.tif')
-        ghsl_bld_dataset = rasterio.open(Raster_path + 'GHSL/GHS_BUILT_S_E2030_GLOBE_R2023A_4326_30ss_V1_0.tif')
+    # define if year is in historical period or SSP period
+    scenarios = 1 if year in Years_select else 5
 
-    # write empty rasters for filling data
-    if year in Years_select:
-        Pop_raster = Compass_path + 'Population_' + str(year) + '.tif'
-        write_empty_raster(ghsl_pop_dataset.profile, Pop_raster, np.float64, dims)
-    else:
-        for s in np.arange(0,5):
-            Pop_raster = Compass_path + 'Population_' + str(year) + '_SSP' + str(s+1) +'.tif'
-            # write_empty_raster(ghsl_pop_dataset.profile, Pop_raster, np.float64, dims)
+    # Write empty output rasters for filling data
+    for s in np.arange(0, scenarios):
+        suffix = str(year) + '_SSP' + str(s + 1) + '.tif' if scenarios == 5 else str(year) + '.tif'
+        write_empty_raster(ghsl_dataset.profile, Compass_path + 'Pop_' + suffix, dims)
+        write_empty_raster(ghsl_dataset.profile, Compass_path + 'GDP_' + suffix, dims)
+        write_empty_raster(ghsl_dataset.profile, Compass_path + 'FA_' + suffix, dims)
 
+    # Iterate by country
     for c in Pop_data[1].index:
         print(Pop_data[1]['ISO3'][c])
 
@@ -88,30 +66,27 @@ for year in Years_all[195:196]:
 
         # Load data by country
         country_mask, location = load_country_mask(country_vector, c, country_dataset)
-        location_ghsl = location + [0, 0, 0, 0]
-        if interp == 1:
-            ghsl_pop_year_l = load_dataset_by_country(ghsl_pop_dataset, location_ghsl, country_mask)
-            ghsl_bld_year_l = load_dataset_by_country(ghsl_bld_dataset, location_ghsl, country_mask)
-            ghsl_pop_year_h = load_dataset_by_country(ghsl_pop_dataset_h, location_ghsl, country_mask)
-            ghsl_bld_year_h = load_dataset_by_country(ghsl_bld_dataset_h, location_ghsl, country_mask)
-            ghsl_pop_year = ghsl_pop_year_l * (year_h - year) / 5 + ghsl_pop_year_h * (year - year_l) / 5
-            ghsl_bld_year = ghsl_bld_year_l * (year_h - year) / 5 + ghsl_bld_year_h * (year - year_l) / 5
-        else:
-            ghsl_pop_year = load_dataset_by_country(ghsl_pop_dataset, location_ghsl, country_mask)
-            ghsl_bld_year = load_dataset_by_country(ghsl_bld_dataset, location_ghsl, country_mask)
+        ghsl_pop_year, ghsl_bld_year = load_ghsl_data(year, Year_ghsl, Raster_path, location, country_mask)
 
+        # sum all gridded population and buildup in the raster
         ghsl_pop_year_total = ghsl_pop_year.sum()
+        ghsl_bld_year_total = ghsl_bld_year.sum()
 
-        if year in Years_select:
-            Pop_adjustment = Pop_data[1][str(year)][c] / ghsl_pop_year_total * 1000
+        for s in np.arange(0, scenarios):
+            suffix = str(year) + '_SSP' + str(s + 1) + '.tif' if scenarios == 5 else str(year) + '.tif'
+            # correct raster values according to national population data
+            Pop_adjustment = (Pop_data[s][str(year)][c] * 1000) / ghsl_pop_year_total
             Pop_country_raster = ghsl_pop_year * Pop_adjustment
-            Pop_raster_hist = Compass_path + 'Population_' + str(year) + '_hist.tif'
-            save_raster_data(Pop_raster_hist, location_ghsl, country_mask, Pop_country_raster)
-        else:
-            for s in np.arange(0,5):
-                Pop_adjustment = Pop_data[s][str(year)][c] / ghsl_pop_year_total * 1000
-                Pop_country_raster = ghsl_pop_year * Pop_adjustment
-                Pop_raster_ssp = Compass_path + 'Population_' + str(year) + '_SSP' + str(s + 1) + '.tif'
-                save_raster_data(Pop_raster_ssp, location_ghsl, country_mask, Pop_country_raster)
+            # disaggregate GDP value (60% by population, 40% by buildup area)
+            GDP_per_pop = GDP_data[s][str(year)][c] * 0.6 / ghsl_pop_year_total * 1E9
+            GDP_per_bld = GDP_data[s][str(year)][c] * 0.4 / ghsl_bld_year_total * 1E9
+            GDP_country_raster = ghsl_pop_year * GDP_per_pop + ghsl_bld_year * GDP_per_bld
+            # disaggregate fixed assets by buildup area
+            FA_per_bld = FA_data[s][str(year)][c] / ghsl_bld_year_total * 1E9
+            FA_country_raster = ghsl_bld_year * FA_per_bld
+            # save results into the output raster
+            save_raster_data(Compass_path + 'Pop_' + suffix, location, country_mask, Pop_country_raster)
+            save_raster_data(Compass_path + 'GDP_' + suffix, location, country_mask, GDP_country_raster)
+            save_raster_data(Compass_path + 'FA_' + suffix, location, country_mask, FA_country_raster)
 
         a=1

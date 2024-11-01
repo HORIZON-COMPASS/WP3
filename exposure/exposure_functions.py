@@ -2,7 +2,7 @@ import numpy as np
 import rasterio, os
 from copulas.bivariate import Frank
 from rasterio.windows import Window
-from scipy.stats import rankdata, spearmanr
+from scipy.stats import rankdata
 
 def prepare_fixed_asset_data(Fixed_asset_raw, GDPpc):
 
@@ -77,9 +77,10 @@ def fixed_asset_estimate(Fixed_asset_orig, copula_assets, copula_samples, GDPpc_
 
     return Fixed_asset_pred
 
-def write_empty_raster(profile, full_filename, data_type, dimensions):
+def write_empty_raster(profile, full_filename, dimensions):
 
     mode = 'w'
+    data_type = np.float64
 
     if os.path.isfile(full_filename):
         #os.remove(full_filename)
@@ -140,3 +141,54 @@ def save_raster_data(path_and_name, location, region_mask, raster_dataset):
     with rasterio.open(path_and_name, 'r+', **profile) as dst:
         dst.write(read_dataset_year, window=Window(col_off, row_off, width, height), indexes=1)
     raster_dataset_year.close()
+
+def load_ghsl_data(year, Year_ghsl, Raster_path, location, country_mask):
+
+    year_h = ''
+    ghsl_pop_dataset_h = ''
+    ghsl_bld_dataset_h = ''
+    interp = 0
+    ghsl_version = '_GLOBE_R2023A_4326_30ss_V1_0.tif'
+
+    location_ghsl_pop = location + [0, 0, 0, 0]
+    location_ghsl_bld = location + [-1, 0, 0, 0]
+    # correct for offset in the build surface dataset
+    country_mask_bld = country_mask[:, 1:] if country_mask.shape[1] > 43200 else country_mask
+
+    if (year > 1975) & (year < 2030) & (year not in Year_ghsl):
+        # if year is between GHSL dataset, open upper limit dataset for interpolation
+        interp = 1
+        year_l = max(Year_ghsl[Year_ghsl < year])
+        year_h = min(Year_ghsl[Year_ghsl > year])
+        ghsl_pop_dataset_h = rasterio.open(Raster_path + 'GHSL/GHS_POP_E' + str(year_h) + ghsl_version)
+        ghsl_bld_dataset_h = rasterio.open(Raster_path + 'GHSL/GHS_BUILT_S_E' + str(year_h) + ghsl_version)
+    elif year <= 1975:
+        # Use 1975 dataset for 1850-1975
+        year_l = 1975
+    elif year >= 2030:
+        # Use 2030 dataset for 2030-2100
+        year_l = 2030
+    else:
+        year_l = year
+    # open GHSL dataset or its lower limit for interpolation
+    ghsl_pop_dataset = rasterio.open(Raster_path + 'GHSL/GHS_POP_E' + str(year_l) + ghsl_version)
+    ghsl_bld_dataset = rasterio.open(Raster_path + 'GHSL/GHS_BUILT_S_E' + str(year_l) + ghsl_version)
+
+    if interp == 1:
+        ghsl_pop_year_l = load_dataset_by_country(ghsl_pop_dataset, location_ghsl_pop, country_mask)
+        ghsl_bld_year_l = load_dataset_by_country(ghsl_bld_dataset, location_ghsl_bld, country_mask_bld)
+        ghsl_pop_year_h = load_dataset_by_country(ghsl_pop_dataset_h, location_ghsl_pop, country_mask)
+        ghsl_bld_year_h = load_dataset_by_country(ghsl_bld_dataset_h, location_ghsl_bld, country_mask_bld)
+        ghsl_pop_year = ghsl_pop_year_l * (year_h - year) / 5 + ghsl_pop_year_h * (year - year_l) / 5
+        ghsl_bld_year = ghsl_bld_year_l * (year_h - year) / 5 + ghsl_bld_year_h * (year - year_l) / 5
+    else:
+        ghsl_pop_year = load_dataset_by_country(ghsl_pop_dataset, location_ghsl_pop, country_mask)
+        ghsl_bld_year = load_dataset_by_country(ghsl_bld_dataset, location_ghsl_bld, country_mask_bld)
+
+    # correct for offset in the building layer
+    if ghsl_bld_year.shape[1] < ghsl_pop_year.shape[1]:
+        ghsl_bld_year_c = np.concatenate([np.zeros([ghsl_pop_year.shape[0], 1]), ghsl_bld_year],axis=1)
+    else:
+        ghsl_bld_year_c = ghsl_bld_year
+
+    return ghsl_pop_year, ghsl_bld_year_c
