@@ -4,7 +4,7 @@ from exposure_functions import copula_fit_frank, prepare_fixed_asset_data, fixed
 from scipy.interpolate import interp1d
 
 ## PARAMETRS
-Harmonize = 'yes'
+Harmonize = 'no'
 Last_hist_year_pop = 2023 # last year of historical population data
 Last_hist_year_eco = 2022 # last year of historical economic data
 Last_weo_year = 2029 # last year for which WEO projections are available

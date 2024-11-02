@@ -8,15 +8,13 @@ from exposure_functions import (write_empty_raster, load_country_mask, save_rast
 ## PARAMETERS
 Harmonize = 'yes' # 'yes' or 'no'
 Last_hist_year = 2022 # last year of historical data
-Compass_path = 'C:/HANZE2_products/Compass_exposure/'
-Raster_path = 'C:/HANZE2_temp/'
+Compass_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_products/Compass_exposure/'
+Raster_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_temp/'
 
 # Define timespans
 Years_all = list(range(1850,2101))
 Years_hist = np.arange(1850,Last_hist_year+1)
 Years_hist_ssp = np.arange(1850,2021)
-# Year_ssp_harm = list(range(Last_hist_year+1,2101))
-# Year_ssp_noharm = list(range(2021,2101))
 Years_ghsl = np.arange(1975, 2035, 5) if Harmonize == 'yes' else np.arange(1975, 2025, 5)
 Years_hyde = np.arange(1850, 1990, 10)
 Years_ssp = np.arange(2030, 2105, 5) if Harmonize == 'yes' else np.arange(2020, 2105, 5)
@@ -44,7 +42,7 @@ ghsl_dataset = rasterio.open(Raster_path + 'GHSL/GHS_POP_E1975_GLOBE_R2023A_4326
 # create disaggregation
 dims = [country_dataset.height, country_dataset.width]
 file_ending = '_' + Harmonize + '.tif'
-for year in Years_all[195:196]:
+for year in [1850, 1927, 1975, 2020, 2030, 2057, 2100]: #Years_all[195:196]:
     print(str(year))
 
     # define if year is in historical period or SSP period
@@ -53,12 +51,11 @@ for year in Years_all[195:196]:
     # Write empty output rasters for filling data
     for s in [1]: #np.arange(0, scenarios):
         suffix = str(year) + '_SSP' + str(s + 1) + file_ending if scenarios == 5 else str(year) + file_ending
-        # write_empty_raster(ghsl_dataset.profile, Compass_path + 'Pop_' + suffix, dims)
-        # write_empty_raster(ghsl_dataset.profile, Compass_path + 'GDP_' + suffix, dims)
-        # write_empty_raster(ghsl_dataset.profile, Compass_path + 'FA_' + suffix, dims)
+        write_empty_raster(ghsl_dataset.profile, Compass_path + 'Pop_' + suffix, dims)
+        write_empty_raster(ghsl_dataset.profile, Compass_path + 'GDP_' + suffix, dims)
+        write_empty_raster(ghsl_dataset.profile, Compass_path + 'FA_' + suffix, dims)
 
     # Iterate by country
-    # noinspection PyUnboundLocalVariable
     for c in Pop_data[1].index: #[674, 242,674,674,492,242]: #
         print(Pop_data[1]['ISO3'][c])
 
