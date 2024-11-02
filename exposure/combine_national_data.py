@@ -9,7 +9,7 @@ Last_hist_year_pop = 2023 # last year of historical population data
 Last_hist_year_eco = 2022 # last year of historical economic data
 Last_weo_year = 2029 # last year for which WEO projections are available
 Base_SSP_year = 2020 # base year of SSP projections
-Compass_path = 'C:/HANZE2_products/Compass_exposure/'
+Compass_path = '/p/tmp/dominikp/COMPASS/Exposure/National_data' #'C:/HANZE2_products/Compass_exposure/National_data/'
 
 ## Input national timeseries historical
 National_data_hist_file = Compass_path + 'National_exposure_all.xlsx'

@@ -35,17 +35,15 @@ for s in np.arange(0,5):
                               index_col='ISOn')
 
 # Load administrative map
-country_dataset = rasterio.open(Compass_path + 'OSM_country_map.tif')
-country_vector = gp.read_file('C:/HANZE2_rawdata/Admin/Global_OSM_boundaries_2024_v4.shp')
+country_dataset = rasterio.open(Compass_path + 'Admin/OSM_country_map.tif')
+country_vector = gp.read_file(Compass_path + 'Admin/Global_OSM_boundaries_2024_v4.shp')
 
 # load one of the GHSL dataset to get the raster profile
 ghsl_dataset = rasterio.open(Raster_path + 'GHSL/GHS_POP_E1975_GLOBE_R2023A_4326_30ss_V1_0.tif')
 
-# test
-hyde_dataset = rasterio.open(Raster_path + 'HYDE/zip/popc_1980AD.asc') # offset: left: 1 top: 108 right: 1 bottom: 198
-
 # create disaggregation
 dims = [country_dataset.height, country_dataset.width]
+file_ending = '_' + Harmonize + '.tif'
 for year in Years_all[195:196]:
     print(str(year))
 
@@ -53,14 +51,15 @@ for year in Years_all[195:196]:
     scenarios = 1 if year in Years_select else 5
 
     # Write empty output rasters for filling data
-    for s in [2]: #np.arange(0, scenarios):
-        suffix = str(year) + '_SSP' + str(s + 1) + '.tif' if scenarios == 5 else str(year) + '.tif'
+    for s in [1]: #np.arange(0, scenarios):
+        suffix = str(year) + '_SSP' + str(s + 1) + file_ending if scenarios == 5 else str(year) + file_ending
         # write_empty_raster(ghsl_dataset.profile, Compass_path + 'Pop_' + suffix, dims)
         # write_empty_raster(ghsl_dataset.profile, Compass_path + 'GDP_' + suffix, dims)
         # write_empty_raster(ghsl_dataset.profile, Compass_path + 'FA_' + suffix, dims)
 
     # Iterate by country
-    for c in [674, 242,674,674,492,242]: #Pop_data[1].index: #
+    # noinspection PyUnboundLocalVariable
+    for c in Pop_data[1].index: #[674, 242,674,674,492,242]: #
         print(Pop_data[1]['ISO3'][c])
 
         if Pop_data[1][str(year)][c] == 0:
@@ -82,10 +81,10 @@ for year in Years_all[195:196]:
                 ghsl_pop_year = ghsl_pop_year * hyde_factor
                 ghsl_bld_year = ghsl_bld_year * hyde_factor
 
-        for s in [2]: #np.arange(0, scenarios):
+        for s in [1]: #np.arange(0, scenarios):
             if year > Years_ssp[0]:
                 # Wang SSP data
-                ssp_pop_year, ssp_pop_base = load_ssp_data(year, Years_ssp, Raster_path, location, country_mask, 1) # FOR TESTING!!!!
+                ssp_pop_year, ssp_pop_base = load_ssp_data(year, Years_ssp, Raster_path, location, country_mask, s)
                 ssp_pop_base_total = ssp_pop_base.sum() / 100
                 if ssp_pop_base_total > 0:
                     ssp_pop_year_total = ssp_pop_year.sum() / 100
@@ -111,7 +110,7 @@ for year in Years_all[195:196]:
             FA_per_bld = FA_data[s][str(year)][c] / ghsl_bld_year_total * 1E9
             FA_country_raster = ghsl_bld_year * FA_per_bld
             # save results into the output raster
-            suffix = str(year) + '_SSP' + str(s + 1) + '.tif' if scenarios == 5 else str(year) + '.tif'
+            suffix = str(year) + '_SSP' + str(s + 1) + file_ending if scenarios == 5 else str(year) + file_ending
             save_raster_data(Compass_path + 'Pop_' + suffix, location, country_mask, Pop_country_raster)
             save_raster_data(Compass_path + 'GDP_' + suffix, location, country_mask, GDP_country_raster)
             save_raster_data(Compass_path + 'FA_' + suffix, location, country_mask, FA_country_raster)
