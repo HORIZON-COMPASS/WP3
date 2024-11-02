@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import rasterio
 import geopandas as gp
-from exposure_functions import (load_country_mask, save_raster_data, load_ghsl_data, load_hyde_data)
+from exposure_functions import (write_empty_raster, load_country_mask, save_raster_data,
+                                load_ghsl_data, load_hyde_data, load_ssp_data)
 
 ## PARAMETERS
 Harmonize = 'yes' # 'yes' or 'no'
@@ -45,21 +46,21 @@ hyde_dataset = rasterio.open(Raster_path + 'HYDE/zip/popc_1980AD.asc') # offset:
 
 # create disaggregation
 dims = [country_dataset.height, country_dataset.width]
-for year in Years_all[83:84]:
+for year in Years_all[195:196]:
     print(str(year))
 
     # define if year is in historical period or SSP period
     scenarios = 1 if year in Years_select else 5
 
     # Write empty output rasters for filling data
-    for s in np.arange(0, scenarios):
+    for s in [2]: #np.arange(0, scenarios):
         suffix = str(year) + '_SSP' + str(s + 1) + '.tif' if scenarios == 5 else str(year) + '.tif'
         # write_empty_raster(ghsl_dataset.profile, Compass_path + 'Pop_' + suffix, dims)
         # write_empty_raster(ghsl_dataset.profile, Compass_path + 'GDP_' + suffix, dims)
         # write_empty_raster(ghsl_dataset.profile, Compass_path + 'FA_' + suffix, dims)
 
     # Iterate by country
-    for c in Pop_data[1].index: #[242,674,242]: #
+    for c in [674, 242,674,674,492,242]: #Pop_data[1].index: #
         print(Pop_data[1]['ISO3'][c])
 
         if Pop_data[1][str(year)][c] == 0:
@@ -80,15 +81,25 @@ for year in Years_all[83:84]:
                 hyde_factor[~hyde_ix] = hyde_pop_year_total / hyde_pop_base_total
                 ghsl_pop_year = ghsl_pop_year * hyde_factor
                 ghsl_bld_year = ghsl_bld_year * hyde_factor
-        if year > Years_ssp[0]:
-            b=1
 
-        # sum all gridded population and buildup in the raster
-        ghsl_pop_year_total = ghsl_pop_year.sum()
-        ghsl_bld_year_total = ghsl_bld_year.sum()
+        for s in [2]: #np.arange(0, scenarios):
+            if year > Years_ssp[0]:
+                # Wang SSP data
+                ssp_pop_year, ssp_pop_base = load_ssp_data(year, Years_ssp, Raster_path, location, country_mask, 1) # FOR TESTING!!!!
+                ssp_pop_base_total = ssp_pop_base.sum() / 100
+                if ssp_pop_base_total > 0:
+                    ssp_pop_year_total = ssp_pop_year.sum() / 100
+                    ssp_ix = ssp_pop_base > 0
+                    ssp_factor = np.ones([country_mask.shape[0], country_mask.shape[1]])
+                    ssp_factor[ssp_ix] = ssp_pop_year[ssp_ix] / ssp_pop_base[ssp_ix]
+                    ssp_factor[~ssp_ix] = ssp_pop_year_total / ssp_pop_base_total
+                    ghsl_pop_year = ghsl_pop_year * ssp_factor
+                    ghsl_bld_year = ghsl_bld_year * ssp_factor
 
-        for s in np.arange(0, scenarios):
-            suffix = str(year) + '_SSP' + str(s + 1) + '.tif' if scenarios == 5 else str(year) + '.tif'
+            # sum all gridded population and buildup in the raster
+            ghsl_pop_year_total = ghsl_pop_year.sum()
+            ghsl_bld_year_total = ghsl_bld_year.sum()
+
             # correct raster values according to national population data
             Pop_adjustment = (Pop_data[s][str(year)][c] * 1000) / ghsl_pop_year_total
             Pop_country_raster = ghsl_pop_year * Pop_adjustment
@@ -100,8 +111,7 @@ for year in Years_all[83:84]:
             FA_per_bld = FA_data[s][str(year)][c] / ghsl_bld_year_total * 1E9
             FA_country_raster = ghsl_bld_year * FA_per_bld
             # save results into the output raster
+            suffix = str(year) + '_SSP' + str(s + 1) + '.tif' if scenarios == 5 else str(year) + '.tif'
             save_raster_data(Compass_path + 'Pop_' + suffix, location, country_mask, Pop_country_raster)
             save_raster_data(Compass_path + 'GDP_' + suffix, location, country_mask, GDP_country_raster)
             save_raster_data(Compass_path + 'FA_' + suffix, location, country_mask, FA_country_raster)
-
-        a=1

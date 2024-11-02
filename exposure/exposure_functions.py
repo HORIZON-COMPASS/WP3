@@ -103,11 +103,9 @@ def load_country_mask(country_vector, c, country_dataset):
     # find the country in the raster
     res = country_dataset.res[0]
     start_grid_x = np.floor(EXT_MIN_X / res)
-    start_grid_y = np.floor(country_dataset.shape[0] - EXT_MAX_Y / res) + 1
+    start_grid_y = np.floor(country_dataset.shape[0] - EXT_MAX_Y / res)
     extent_x = np.ceil((EXT_MAX_X - EXT_MIN_X) / res)
-    # if extent_x > 43200:
-    #     extent_x[0] = 43200
-    extent_y = np.ceil((EXT_MAX_Y - EXT_MIN_Y) / res)
+    extent_y = np.ceil((EXT_MAX_Y - EXT_MIN_Y) / res) + 1
     location = np.concatenate([start_grid_x, start_grid_y, extent_x, extent_y])
     country = country_dataset.read(1, window=Window(start_grid_x, start_grid_y, extent_x, extent_y))
     # find grid cells specific for the country
@@ -245,10 +243,56 @@ def load_hyde_data(year, Year_hyde, Raster_path, location, country_mask):
     hyde_base_1km = hyde_base_interp[row_off: row_off + int(location[3]), col_off: col_off + int(location[2])]
     hyde_year_1km = hyde_year_interp[row_off: row_off + int(location[3]), col_off: col_off + int(location[2])]
     if location_hyde[2] == 4320:
-        # country_mask = np.concatenate([np.full([int(location[3]),1],False), country_mask], axis=1)
         hyde_base_1km = np.concatenate([np.zeros([int(location[3]), 1]), hyde_base_1km], axis=1)
         hyde_year_1km = np.concatenate([np.zeros([int(location[3]), 1]), hyde_year_1km], axis=1)
     hyde_base_1km[~country_mask] = 0
     hyde_year_1km[~country_mask] = 0
 
     return hyde_year_1km, hyde_base_1km
+
+def load_ssp_data(year, Year_ssp, Raster_path, location, country_mask, scenario):
+
+    year_h = ''
+    ssp_pop_dataset_h = ''
+    ssp_file = Raster_path + 'Wang_SSP/SSP' + str(scenario + 1) + '_'
+    interp = 0
+    ssp_base_year = Year_ssp[0]
+
+    # offset for the different grid box of Wang's SSP data
+    location_ssp_pop = location + [-1, -612, 0, 0]
+    if location_ssp_pop[2] > 43200:
+        location_ssp_pop[0] = 0
+        location_ssp_pop[2] = 43200
+        country_mask_ssp = country_mask[:,1:]
+    else:
+        country_mask_ssp = country_mask
+
+    if year not in Year_ssp:
+        # if year is between SSP dataset, open upper limit dataset for interpolation
+        interp = 1
+        year_l = max(Year_ssp[Year_ssp < year])
+        year_h = min(Year_ssp[Year_ssp > year])
+        ssp_pop_dataset_h = rasterio.open(ssp_file + str(year_h) + '.tif')
+    else:
+        year_l = year
+    # open SSP dataset or its lower limit for interpolation
+    ssp_pop_dataset = rasterio.open(ssp_file + str(year_l) + '.tif')
+    # open SSP base year
+    ssp_base_dataset = rasterio.open(ssp_file + str(ssp_base_year) + '.tif')
+
+    if interp == 1:
+        ssp_pop_year_l = load_dataset_by_country(ssp_pop_dataset, location_ssp_pop, country_mask_ssp)
+        ssp_pop_year_h = load_dataset_by_country(ssp_pop_dataset_h, location_ssp_pop, country_mask_ssp)
+        ssp_pop_year = ssp_pop_year_l * (year_h - year) / 5 + ssp_pop_year_h * (year - year_l) / 5
+    else:
+        ssp_pop_year = load_dataset_by_country(ssp_pop_dataset, location_ssp_pop, country_mask_ssp)
+    ssp_pop_base = load_dataset_by_country(ssp_base_dataset, location_ssp_pop, country_mask_ssp)
+
+    ssp_pop_base[ssp_pop_base == 255] = 0
+    ssp_pop_year[ssp_pop_year == 255] = 0
+
+    if location_ssp_pop[2] == 43200:
+        ssp_pop_base = np.concatenate([np.zeros([int(location[3]), 1]), ssp_pop_base], axis=1)
+        ssp_pop_year = np.concatenate([np.zeros([int(location[3]), 1]), ssp_pop_year], axis=1)
+
+    return ssp_pop_year, ssp_pop_base
