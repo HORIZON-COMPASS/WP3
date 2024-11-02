@@ -2,8 +2,7 @@ import pandas as pd
 import numpy as np
 import rasterio
 import geopandas as gp
-from exposure_functions import (write_empty_raster, load_country_mask, save_raster_data,
-                                load_ghsl_data, load_hyde_data)
+from exposure_functions import (load_country_mask, save_raster_data, load_ghsl_data, load_hyde_data)
 
 ## PARAMETERS
 Harmonize = 'yes' # 'yes' or 'no'
@@ -17,14 +16,15 @@ Years_hist = np.arange(1850,Last_hist_year+1)
 Years_hist_ssp = np.arange(1850,2021)
 # Year_ssp_harm = list(range(Last_hist_year+1,2101))
 # Year_ssp_noharm = list(range(2021,2101))
-Year_ghsl = np.arange(1975,2035,5)
-Year_hyde = np.arange(1850,1990,10)
+Years_ghsl = np.arange(1975, 2035, 5) if Harmonize == 'yes' else np.arange(1975, 2025, 5)
+Years_hyde = np.arange(1850, 1990, 10)
+Years_ssp = np.arange(2030, 2105, 5) if Harmonize == 'yes' else np.arange(2020, 2105, 5)
+Years_select = Years_hist if Harmonize == 'yes' else Years_hist_ssp
 
 # Load national exposure data
 Pop_data = dict()
 GDP_data = dict()
 FA_data = dict()
-Years_select = Years_hist if Harmonize == 'yes' else Years_hist_ssp
 for s in np.arange(0,5):
     Pop_data[s] = pd.read_csv(Compass_path + 'Pop_combined_SSP' + str(s + 1) + '_' + Harmonize + '.csv',
                               index_col='ISOn')
@@ -67,10 +67,10 @@ for year in Years_all[83:84]:
 
         # Load data by country
         country_mask, location = load_country_mask(country_vector, c, country_dataset)
-        ghsl_pop_year, ghsl_bld_year = load_ghsl_data(year, Year_ghsl, Raster_path, location, country_mask)
+        ghsl_pop_year, ghsl_bld_year = load_ghsl_data(year, Years_ghsl, Raster_path, location, country_mask)
         if year < 1975:
             # HYDE data and correction
-            hyde_pop_year, hyde_pop_base = load_hyde_data(year, Year_hyde, Raster_path, location, country_mask)
+            hyde_pop_year, hyde_pop_base = load_hyde_data(year, Years_hyde, Raster_path, location, country_mask)
             hyde_pop_base_total = hyde_pop_base.sum() / 100
             if hyde_pop_base_total > 0:
                 hyde_pop_year_total = hyde_pop_year.sum() / 100
@@ -80,6 +80,8 @@ for year in Years_all[83:84]:
                 hyde_factor[~hyde_ix] = hyde_pop_year_total / hyde_pop_base_total
                 ghsl_pop_year = ghsl_pop_year * hyde_factor
                 ghsl_bld_year = ghsl_bld_year * hyde_factor
+        if year > Years_ssp[0]:
+            b=1
 
         # sum all gridded population and buildup in the raster
         ghsl_pop_year_total = ghsl_pop_year.sum()

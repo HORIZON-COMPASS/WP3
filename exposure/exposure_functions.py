@@ -105,8 +105,8 @@ def load_country_mask(country_vector, c, country_dataset):
     start_grid_x = np.floor(EXT_MIN_X / res)
     start_grid_y = np.floor(country_dataset.shape[0] - EXT_MAX_Y / res) + 1
     extent_x = np.ceil((EXT_MAX_X - EXT_MIN_X) / res)
-    if extent_x > 43200:
-        extent_x[0] = 43200
+    # if extent_x > 43200:
+    #     extent_x[0] = 43200
     extent_y = np.ceil((EXT_MAX_Y - EXT_MIN_Y) / res)
     location = np.concatenate([start_grid_x, start_grid_y, extent_x, extent_y])
     country = country_dataset.read(1, window=Window(start_grid_x, start_grid_y, extent_x, extent_y))
@@ -152,25 +152,27 @@ def load_ghsl_data(year, Year_ghsl, Raster_path, location, country_mask):
     ghsl_bld_dataset_h = ''
     interp = 0
     ghsl_version = '_GLOBE_R2023A_4326_30ss_V1_0.tif'
+    ghsl_first_year = Year_ghsl[0]
+    ghsl_end_year = Year_ghsl[-1]
 
     location_ghsl_pop = location + [0, 0, 0, 0]
     location_ghsl_bld = location + [-1, 0, 0, 0]
     # correct for offset in the build surface dataset
     country_mask_bld = country_mask[:, 1:] if country_mask.shape[1] >= 43200 else country_mask
 
-    if (year > 1975) & (year < 2030) & (year not in Year_ghsl):
+    if (year > ghsl_first_year) & (year < ghsl_end_year) & (year not in Year_ghsl):
         # if year is between GHSL dataset, open upper limit dataset for interpolation
         interp = 1
         year_l = max(Year_ghsl[Year_ghsl < year])
         year_h = min(Year_ghsl[Year_ghsl > year])
         ghsl_pop_dataset_h = rasterio.open(Raster_path + 'GHSL/GHS_POP_E' + str(year_h) + ghsl_version)
         ghsl_bld_dataset_h = rasterio.open(Raster_path + 'GHSL/GHS_BUILT_S_E' + str(year_h) + ghsl_version)
-    elif year <= 1975:
+    elif year <= ghsl_first_year:
         # Use 1975 dataset for 1850-1975
-        year_l = 1975
-    elif year >= 2030:
+        year_l = ghsl_first_year
+    elif year >= ghsl_end_year:
         # Use 2030 dataset for 2030-2100
-        year_l = 2030
+        year_l = ghsl_end_year
     else:
         year_l = year
     # open GHSL dataset or its lower limit for interpolation
@@ -208,7 +210,7 @@ def load_hyde_data(year, Year_hyde, Raster_path, location, country_mask):
     location_hyde[2] = np.ceil(location[2] / 10) + 2
     location_hyde[3] = np.ceil(location[3] / 10) + 2
     # correct for offsets
-    if location_hyde[2]>4320:
+    if location_hyde[2] > 4320:
         location_hyde[0] = 0
         location_hyde[2] = 4320
         col_off = int(np.mod(location[0], 10))
@@ -242,6 +244,10 @@ def load_hyde_data(year, Year_hyde, Raster_path, location, country_mask):
     hyde_year_interp = zoom(hyde_year, (10, 10), order = 0, mode = 'grid-constant', grid_mode=True)
     hyde_base_1km = hyde_base_interp[row_off: row_off + int(location[3]), col_off: col_off + int(location[2])]
     hyde_year_1km = hyde_year_interp[row_off: row_off + int(location[3]), col_off: col_off + int(location[2])]
+    if location_hyde[2] == 4320:
+        # country_mask = np.concatenate([np.full([int(location[3]),1],False), country_mask], axis=1)
+        hyde_base_1km = np.concatenate([np.zeros([int(location[3]), 1]), hyde_base_1km], axis=1)
+        hyde_year_1km = np.concatenate([np.zeros([int(location[3]), 1]), hyde_year_1km], axis=1)
     hyde_base_1km[~country_mask] = 0
     hyde_year_1km[~country_mask] = 0
 
