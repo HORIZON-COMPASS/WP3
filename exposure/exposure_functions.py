@@ -3,6 +3,7 @@ import rasterio, os
 from copulas.bivariate import Frank
 from rasterio.windows import Window
 from scipy.stats import rankdata
+from scipy.ndimage import zoom
 
 def prepare_fixed_asset_data(Fixed_asset_raw, GDPpc):
 
@@ -102,8 +103,10 @@ def load_country_mask(country_vector, c, country_dataset):
     # find the country in the raster
     res = country_dataset.res[0]
     start_grid_x = np.floor(EXT_MIN_X / res)
-    start_grid_y = np.floor(country_dataset.shape[0] - EXT_MAX_Y / res)
+    start_grid_y = np.floor(country_dataset.shape[0] - EXT_MAX_Y / res) + 1
     extent_x = np.ceil((EXT_MAX_X - EXT_MIN_X) / res)
+    if extent_x > 43200:
+        extent_x[0] = 43200
     extent_y = np.ceil((EXT_MAX_Y - EXT_MIN_Y) / res)
     location = np.concatenate([start_grid_x, start_grid_y, extent_x, extent_y])
     country = country_dataset.read(1, window=Window(start_grid_x, start_grid_y, extent_x, extent_y))
@@ -153,7 +156,7 @@ def load_ghsl_data(year, Year_ghsl, Raster_path, location, country_mask):
     location_ghsl_pop = location + [0, 0, 0, 0]
     location_ghsl_bld = location + [-1, 0, 0, 0]
     # correct for offset in the build surface dataset
-    country_mask_bld = country_mask[:, 1:] if country_mask.shape[1] > 43200 else country_mask
+    country_mask_bld = country_mask[:, 1:] if country_mask.shape[1] >= 43200 else country_mask
 
     if (year > 1975) & (year < 2030) & (year not in Year_ghsl):
         # if year is between GHSL dataset, open upper limit dataset for interpolation
@@ -192,3 +195,54 @@ def load_ghsl_data(year, Year_ghsl, Raster_path, location, country_mask):
         ghsl_bld_year_c = ghsl_bld_year
 
     return ghsl_pop_year, ghsl_bld_year_c
+
+def load_hyde_data(year, Year_hyde, Raster_path, location, country_mask):
+
+    year_h = ''
+    hyde_dataset_h = ''
+    interp = 0
+
+    location_hyde = np.zeros(4)
+    location_hyde[0] = np.floor(location[0] / 10) - 1
+    location_hyde[1] = np.floor(location[1] / 10) + 10
+    location_hyde[2] = np.ceil(location[2] / 10) + 2
+    location_hyde[3] = np.ceil(location[3] / 10) + 2
+    # correct for offsets
+    if location_hyde[2]>4320:
+        location_hyde[0] = 0
+        location_hyde[2] = 4320
+        col_off = int(np.mod(location[0], 10))
+    else:
+        col_off = int(np.mod(location[0], 10)) - 1 + 10
+    row_off = int(np.mod(location[1], 10)) - 2 + 10
+    country_mask_hyde = np.full([int(location_hyde[3]), int(location_hyde[2])], True)
+
+    if year not in Year_hyde:
+        # if year is between HYDE dataset, open upper limit dataset for interpolation
+        interp = 1
+        year_l = max(Year_hyde[Year_hyde < year])
+        year_h = min(Year_hyde[Year_hyde > year])
+        hyde_dataset_h = rasterio.open(Raster_path + 'HYDE/zip/popc_' + str(year_h) + 'AD.asc')
+    else:
+        year_l = year
+    # open HYDE dataset or its lower limit for interpolation
+    hyde_dataset = rasterio.open(Raster_path + 'HYDE/zip/popc_' + str(year_l) + 'AD.asc')
+    # open base HYDE dataset (1975, created in ArcGIS)
+    hyde_dataset_base = rasterio.open(Raster_path + 'HYDE/popc_1975AD.tif')
+
+    if interp == 1:
+        hyde_year_l = load_dataset_by_country(hyde_dataset, location_hyde, country_mask_hyde)
+        hyde_year_h = load_dataset_by_country(hyde_dataset_h, location_hyde, country_mask_hyde)
+        hyde_year = hyde_year_l * (year_h - year) / 10 + hyde_year_h * (year - year_l) / 10
+    else:
+        hyde_year = load_dataset_by_country(hyde_dataset, location_hyde, country_mask_hyde)
+    hyde_base = load_dataset_by_country(hyde_dataset_base, location_hyde, country_mask_hyde)
+
+    hyde_base_interp = zoom(hyde_base, (10, 10), order = 0, mode = 'grid-constant', grid_mode=True)
+    hyde_year_interp = zoom(hyde_year, (10, 10), order = 0, mode = 'grid-constant', grid_mode=True)
+    hyde_base_1km = hyde_base_interp[row_off: row_off + int(location[3]), col_off: col_off + int(location[2])]
+    hyde_year_1km = hyde_year_interp[row_off: row_off + int(location[3]), col_off: col_off + int(location[2])]
+    hyde_base_1km[~country_mask] = 0
+    hyde_year_1km[~country_mask] = 0
+
+    return hyde_year_1km, hyde_base_1km

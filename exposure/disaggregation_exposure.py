@@ -3,10 +3,10 @@ import numpy as np
 import rasterio
 import geopandas as gp
 from exposure_functions import (write_empty_raster, load_country_mask, save_raster_data,
-                                load_ghsl_data)
+                                load_ghsl_data, load_hyde_data)
 
 ## PARAMETERS
-Harmonize = 'yes'
+Harmonize = 'yes' # 'yes' or 'no'
 Last_hist_year = 2022 # last year of historical data
 Compass_path = 'C:/HANZE2_products/Compass_exposure/'
 Raster_path = 'C:/HANZE2_temp/'
@@ -15,9 +15,10 @@ Raster_path = 'C:/HANZE2_temp/'
 Years_all = list(range(1850,2101))
 Years_hist = np.arange(1850,Last_hist_year+1)
 Years_hist_ssp = np.arange(1850,2021)
-Year_ssp_harm = list(range(Last_hist_year+1,2101))
-Year_ssp_noharm = list(range(2021,2101))
+# Year_ssp_harm = list(range(Last_hist_year+1,2101))
+# Year_ssp_noharm = list(range(2021,2101))
 Year_ghsl = np.arange(1975,2035,5)
+Year_hyde = np.arange(1850,1990,10)
 
 # Load national exposure data
 Pop_data = dict()
@@ -44,7 +45,7 @@ hyde_dataset = rasterio.open(Raster_path + 'HYDE/zip/popc_1980AD.asc') # offset:
 
 # create disaggregation
 dims = [country_dataset.height, country_dataset.width]
-for year in Years_all[127:128]:
+for year in Years_all[83:84]:
     print(str(year))
 
     # define if year is in historical period or SSP period
@@ -53,12 +54,12 @@ for year in Years_all[127:128]:
     # Write empty output rasters for filling data
     for s in np.arange(0, scenarios):
         suffix = str(year) + '_SSP' + str(s + 1) + '.tif' if scenarios == 5 else str(year) + '.tif'
-        write_empty_raster(ghsl_dataset.profile, Compass_path + 'Pop_' + suffix, dims)
-        write_empty_raster(ghsl_dataset.profile, Compass_path + 'GDP_' + suffix, dims)
-        write_empty_raster(ghsl_dataset.profile, Compass_path + 'FA_' + suffix, dims)
+        # write_empty_raster(ghsl_dataset.profile, Compass_path + 'Pop_' + suffix, dims)
+        # write_empty_raster(ghsl_dataset.profile, Compass_path + 'GDP_' + suffix, dims)
+        # write_empty_raster(ghsl_dataset.profile, Compass_path + 'FA_' + suffix, dims)
 
     # Iterate by country
-    for c in Pop_data[1].index:
+    for c in Pop_data[1].index: #[242,674,242]: #
         print(Pop_data[1]['ISO3'][c])
 
         if Pop_data[1][str(year)][c] == 0:
@@ -67,6 +68,18 @@ for year in Years_all[127:128]:
         # Load data by country
         country_mask, location = load_country_mask(country_vector, c, country_dataset)
         ghsl_pop_year, ghsl_bld_year = load_ghsl_data(year, Year_ghsl, Raster_path, location, country_mask)
+        if year < 1975:
+            # HYDE data and correction
+            hyde_pop_year, hyde_pop_base = load_hyde_data(year, Year_hyde, Raster_path, location, country_mask)
+            hyde_pop_base_total = hyde_pop_base.sum() / 100
+            if hyde_pop_base_total > 0:
+                hyde_pop_year_total = hyde_pop_year.sum() / 100
+                hyde_ix = hyde_pop_base > 0
+                hyde_factor = np.ones([country_mask.shape[0],country_mask.shape[1]])
+                hyde_factor[hyde_ix] = hyde_pop_year[hyde_ix] / hyde_pop_base[hyde_ix]
+                hyde_factor[~hyde_ix] = hyde_pop_year_total / hyde_pop_base_total
+                ghsl_pop_year = ghsl_pop_year * hyde_factor
+                ghsl_bld_year = ghsl_bld_year * hyde_factor
 
         # sum all gridded population and buildup in the raster
         ghsl_pop_year_total = ghsl_pop_year.sum()
