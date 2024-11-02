@@ -42,7 +42,7 @@ ghsl_dataset = rasterio.open(Raster_path + 'GHSL/GHS_POP_E1975_GLOBE_R2023A_4326
 # create disaggregation
 dims = [country_dataset.height, country_dataset.width]
 file_ending = '_' + Harmonize + '.tif'
-for year in [1850, 1927, 1975, 2020, 2030, 2057, 2100]: #Years_all[195:196]:
+for year in [1850, 1927, 1975, 2022, 2030, 2057, 2100]: #Years_all[195:196]:
     print(str(year))
 
     # define if year is in historical period or SSP period
