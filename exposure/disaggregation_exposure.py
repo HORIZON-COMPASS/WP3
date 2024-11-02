@@ -25,11 +25,11 @@ Pop_data = dict()
 GDP_data = dict()
 FA_data = dict()
 for s in np.arange(0,5):
-    Pop_data[s] = pd.read_csv(Compass_path + 'Pop_combined_SSP' + str(s + 1) + '_' + Harmonize + '.csv',
+    Pop_data[s] = pd.read_csv(Compass_path + 'National_data/Pop_combined_SSP' + str(s + 1) + '_' + Harmonize + '.csv',
                               index_col='ISOn')
-    GDP_data[s] = pd.read_csv(Compass_path + 'GDP_combined_SSP' + str(s + 1) + '_' + Harmonize + '.csv',
+    GDP_data[s] = pd.read_csv(Compass_path + 'National_data/GDP_combined_SSP' + str(s + 1) + '_' + Harmonize + '.csv',
                               index_col='ISOn')
-    FA_data[s] = pd.read_csv(Compass_path + 'FA_combined_SSP' + str(s + 1) + '_' + Harmonize + '.csv',
+    FA_data[s] = pd.read_csv(Compass_path + 'National_data/FA_combined_SSP' + str(s + 1) + '_' + Harmonize + '.csv',
                               index_col='ISOn')
 
 # Load administrative map
