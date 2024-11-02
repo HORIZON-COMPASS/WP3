@@ -9,7 +9,7 @@ from exposure_functions import (write_empty_raster, load_country_mask, save_rast
 Harmonize = 'yes' # 'yes' or 'no'
 Last_hist_year = 2022 # last year of historical data
 Compass_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_products/Compass_exposure/'
-Raster_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_temp/'
+Raster_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_temp/COMPASS_Exposure/'
 
 # Define timespans
 Years_all = list(range(1850,2101))
@@ -41,9 +41,12 @@ ghsl_dataset = rasterio.open(Raster_path + 'GHSL/GHS_POP_E1975_GLOBE_R2023A_4326
 
 # create disaggregation
 dims = [country_dataset.height, country_dataset.width]
-file_ending = '_' + Harmonize + '.tif'
 for year in [1850, 1927, 1975, 2022, 2030, 2057, 2100]: #Years_all[195:196]:
     print(str(year))
+    if year > 2020:
+        file_ending = '_' + Harmonize + '.tif'
+    else:
+        file_ending = '.tif'
 
     # define if year is in historical period or SSP period
     scenarios = 1 if year in Years_select else 5
