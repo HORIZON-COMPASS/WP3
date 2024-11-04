@@ -8,8 +8,8 @@ from exposure_functions import (write_empty_raster, load_country_mask, save_rast
 ## PARAMETERS
 Harmonize = 'yes' # 'yes' or 'no'
 Last_hist_year = 2022 # last year of historical data
-Compass_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_products/Compass_exposure/'
-Raster_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_temp/COMPASS_Exposure/'
+Compass_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_products/Compass_exposure/' #
+Raster_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_temp/COMPASS_Exposure/' #
 
 # Define timespans
 Years_all = list(range(1850,2101))
@@ -39,9 +39,13 @@ country_vector = gp.read_file(Compass_path + 'Admin/Global_OSM_boundaries_2024_v
 # load one of the GHSL dataset to get the raster profile
 ghsl_dataset = rasterio.open(Raster_path + 'GHSL/GHS_POP_E1975_GLOBE_R2023A_4326_30ss_V1_0.tif')
 
+# create raster profile
+output_profile = ghsl_dataset.profile
+output_profile.data['dtype'] = 'float32'
+
 # create disaggregation
 dims = [country_dataset.height, country_dataset.width]
-for year in [1850, 1927, 1975, 2022, 2030, 2057, 2100]: #Years_all[195:196]:
+for year in [2099]: #[1850, 1927, 1975, 2022, 2030, 2057, 2100]: #Years_all[195:196]:
     print(str(year))
     if year > 2020:
         file_ending = '_' + Harmonize + '.tif'
@@ -54,9 +58,9 @@ for year in [1850, 1927, 1975, 2022, 2030, 2057, 2100]: #Years_all[195:196]:
     # Write empty output rasters for filling data
     for s in [1]: #np.arange(0, scenarios):
         suffix = str(year) + '_SSP' + str(s + 1) + file_ending if scenarios == 5 else str(year) + file_ending
-        write_empty_raster(ghsl_dataset.profile, Compass_path + 'Pop_' + suffix, dims)
-        write_empty_raster(ghsl_dataset.profile, Compass_path + 'GDP_' + suffix, dims)
-        write_empty_raster(ghsl_dataset.profile, Compass_path + 'FA_' + suffix, dims)
+        write_empty_raster(output_profile, Compass_path + 'Pop_' + suffix, dims)
+        write_empty_raster(output_profile, Compass_path + 'GDP_' + suffix, dims)
+        write_empty_raster(output_profile, Compass_path + 'FA_' + suffix, dims)
 
     # Iterate by country
     for c in Pop_data[1].index: #[674, 242,674,674,492,242]: #
