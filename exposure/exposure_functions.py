@@ -104,10 +104,10 @@ def copy_empty(empty_raster, Compass_path, suffix):
     vars = ['Pop_', 'GDP_', 'FA_']
 
     for v in vars:
-        full_filename = Compass_path + 'Pop_' + suffix
+        full_filename = Compass_path + v + suffix
         if os.path.isfile(full_filename):
             os.remove(full_filename)
-        shutil.copy(empty_raster, Compass_path + v + suffix)
+        shutil.copy(empty_raster, full_filename)
 
 def load_country_mask(country_vector, c, country_dataset):
 

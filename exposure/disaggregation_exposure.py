@@ -9,8 +9,8 @@ from exposure_functions import (write_empty_raster, load_country_mask, save_rast
 Resolutions = [30, 1800] # has to be in arc seconds and multiplier of 30 arc seconds
 Harmonize = 'yes' # 'yes' or 'no'
 Last_hist_year = 2022 # last year of historical data
-Compass_path = 'C:/HANZE2_products/Compass_exposure/' #'/p/tmp/dominikp/COMPASS/Exposure/' #
-Raster_path = 'C:/HANZE2_temp/COMPASS_Exposure/' #'/p/tmp/dominikp/COMPASS/Exposure/' #
+Compass_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_products/Compass_exposure/' #
+Raster_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_temp/COMPASS_Exposure/' #
 for r in Resolutions:
     if np.mod(r,30)!=0:
         sys.exit('Incorrect resolution inserted. Has to be a multiplier of 30 arc seconds')
