@@ -1,6 +1,7 @@
 import numpy as np
 import rasterio, os
 from copulas.bivariate import Frank
+from rasterio import Affine
 from rasterio.windows import Window
 from scipy.stats import rankdata
 from scipy.ndimage import zoom
@@ -78,18 +79,24 @@ def fixed_asset_estimate(Fixed_asset_orig, copula_assets, copula_samples, GDPpc_
 
     return Fixed_asset_pred
 
-def write_empty_raster(profile, full_filename, dimensions):
+def write_empty_raster(output_profile, full_filename, resolution):
 
-    mode = 'w'
-    data_type = np.float64
+    # adapt profile
+    R = resolution / 30
+    output_profile.data['dtype'] = 'float32'
+    output_profile.data['width'] = int(43200 / R)
+    output_profile.data['height'] = int(21600 / R)
+    output_profile.data['transform'] = Affine(R / 120, 0, -180, 0, -R / 120, 90)
+
+    dimensions = [output_profile.data['height'], output_profile.data['width']]
 
     if os.path.isfile(full_filename):
-        #os.remove(full_filename)
+        os.remove(full_filename)
         print(full_filename + " already exists")
     else:
-        empty_data = np.zeros(dimensions, dtype = data_type)
+        empty_data = np.zeros(dimensions, dtype = np.float32)
         with rasterio.Env():
-            with rasterio.open(full_filename, mode, **profile) as dst:
+            with rasterio.open(full_filename, 'w', **output_profile) as dst:
                 dst.write(empty_data, 1)
 
 def load_country_mask(country_vector, c, country_dataset):
@@ -127,7 +134,32 @@ def load_dataset_by_country(dataset, location, country_mask):
 
     return read_dataset
 
-def save_raster_data(path_and_name, location, region_mask, raster_dataset):
+def aggregate_data(data, location, r):
+
+    if r == 30:
+        data_r = data
+        location_r = location
+    else:
+        factor = r / 30
+        col_off = np.divmod(location[0], factor)
+        row_off = np.divmod(location[1], factor)
+        width = np.divmod(location[2] + col_off[1], factor)[0] + 1 if location[2] < 43200 else 720
+        height = np.divmod(location[3] + row_off[1], factor)[0] + 1
+        data_z = np.zeros([int((height) * factor), int((width) * factor)])
+        data_z[int(row_off[1]):int(row_off[1]+location[3]), int(col_off[1]):int(col_off[1]+location[2])] = data
+        # Target dimensions
+        target_shape = (int(height), int(width))
+        # Reshape to create blocks and then sum
+        block_shape = (data_z.shape[0] // target_shape[0], data_z.shape[1] // target_shape[1])
+        data_r = data_z.reshape(target_shape[0], block_shape[0], target_shape[1], block_shape[1]).sum(axis=(1, 3))
+        location_r = np.array([col_off[0], row_off[0], target_shape[1], target_shape[0]])
+
+    return data_r, location_r
+
+def save_raster_data(path_and_name, location_o, raster_dataset_o, r):
+
+    # aggregate data if necessary
+    raster_dataset, location = aggregate_data(raster_dataset_o, location_o, r)
 
     col_off = location[0]
     row_off = location[1]
@@ -136,7 +168,7 @@ def save_raster_data(path_and_name, location, region_mask, raster_dataset):
 
     raster_dataset_year = rasterio.open(path_and_name)
     read_dataset_year = raster_dataset_year.read(1, window=Window(col_off, row_off, width, height))
-    read_dataset_year[region_mask] = raster_dataset[region_mask]
+    read_dataset_year += raster_dataset
     profile = raster_dataset_year.profile
     raster_dataset_year.close()
     with rasterio.open(path_and_name, 'r+', **profile) as dst:

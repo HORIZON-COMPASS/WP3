@@ -1,17 +1,19 @@
 import pandas as pd
 import numpy as np
-import rasterio
 import geopandas as gp
-import shutil
-from rasterio import Affine
-from exposure_functions import (write_empty_raster, load_country_mask, save_raster_data,
-                                load_ghsl_data, load_hyde_data, load_ssp_data)
+import shutil, rasterio, sys
+from exposure_functions import (write_empty_raster, load_country_mask, save_raster_data, load_ghsl_data,
+                                load_hyde_data, load_ssp_data, aggregate_data)
 
 ## PARAMETERS
+Resolutions = [30, 1800] # has to be in arc seconds and multiplier of 30 arc seconds
 Harmonize = 'yes' # 'yes' or 'no'
 Last_hist_year = 2022 # last year of historical data
-Compass_path = 'C:/HANZE2_products/Compass_exposure/' #'/p/tmp/dominikp/COMPASS/Exposure/' #
-Raster_path = 'C:/HANZE2_temp/COMPASS_Exposure/' #'/p/tmp/dominikp/COMPASS/Exposure/' #
+Compass_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_products/Compass_exposure/' #
+Raster_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_temp/COMPASS_Exposure/' #
+for r in Resolutions:
+    if np.mod(r,30)!=0:
+        sys.exit('Incorrect resolution inserted. Has to be a multiplier of 30 arc seconds')
 
 # Define timespans
 Years_all = list(range(1850,2101))
@@ -37,40 +39,37 @@ for s in np.arange(0,5):
 # Load administrative map
 country_dataset = rasterio.open(Compass_path + 'Admin/OSM_country_map.tif')
 country_vector = gp.read_file(Compass_path + 'Admin/Global_OSM_boundaries_2024_v4.shp')
-empty_raster = Compass_path + 'Admin/Empty_raster.tif'
 
-# load one of the GHSL dataset to get the raster profile
-# ghsl_dataset = rasterio.open(Raster_path + 'GHSL/GHS_POP_E1975_GLOBE_R2023A_4326_30ss_V1_0.tif')
-# output_profile = ghsl_dataset.profile
-# output_profile.data['dtype'] = 'float32'
-# output_profile.data['width'] = 43200
-# output_profile.data['height'] = 21600
-# output_profile.data['transform'] = Affine(0.0083333333, 0, -180, 0, -0.0083333333, 90)
+# prepare empty rasters
+ghsl_dataset = rasterio.open(Raster_path + 'GHSL/GHS_POP_E1975_GLOBE_R2023A_4326_30ss_V1_0.tif')
+base_profile = ghsl_dataset.profile
+for r in Resolutions:
+    empty_file = Compass_path + 'Admin/Empty_raster_'+str(r)+'.tif'
+    write_empty_raster(base_profile, empty_file, r)
 
 # create disaggregation
-dims = [country_dataset.height, country_dataset.width]
-for year in [2098]: #[1850, 1927, 1975, 2022, 2030, 2057, 2100]: #Years_all[195:196]:
+for year in Years_all: #[1930]: # #[1850, 1927, 1975, 2022, 2030, 2057, 2100]: #
     print(str(year))
     if year > 2020:
-        file_ending = '_' + Harmonize + '.tif'
+        end_suffix = '_' + Harmonize + '.tif'
     else:
-        file_ending = '.tif'
+        end_suffix = '.tif'
 
     # define if year is in historical period or SSP period
     scenarios = 1 if year in Years_select else 5
 
     # Write empty output rasters for filling data
-    for s in [1]: #np.arange(0, scenarios):
-        suffix = str(year) + '_SSP' + str(s + 1) + file_ending if scenarios == 5 else str(year) + file_ending
-        # shutil.copy(empty_raster, Compass_path + 'Pop_' + suffix)
-        # shutil.copy(empty_raster, Compass_path + 'GDP_' + suffix)
-        # shutil.copy(empty_raster, Compass_path + 'FA_' + suffix)
-        # write_empty_raster(output_profile, Compass_path + 'Pop_' + suffix, dims)
-        # write_empty_raster(output_profile, Compass_path + 'GDP_' + suffix, dims)
-        # write_empty_raster(output_profile, Compass_path + 'FA_' + suffix, dims)
+    for s in np.arange(0, scenarios): #[1]: #
+        for r in Resolutions:
+            empty_raster = Compass_path + 'Admin/Empty_raster_' + str(r) + '.tif'
+            base_suffix = str(year) + '_' + str(r)
+            suffix = base_suffix + '_SSP' + str(s + 1) + end_suffix if scenarios == 5 else base_suffix + end_suffix
+            shutil.copy(empty_raster, Compass_path + 'Pop_' + suffix)
+            shutil.copy(empty_raster, Compass_path + 'GDP_' + suffix)
+            shutil.copy(empty_raster, Compass_path + 'FA_' + suffix)
 
     # Iterate by country
-    for c in Pop_data[1].index: #[242,674,674,674,492,242]: #
+    for c in Pop_data[1].index: #[242,674,242,674,492]: #
         print(Pop_data[1]['ISO3'][c])
 
         if Pop_data[1][str(year)][c] == 0:
@@ -126,14 +125,13 @@ for year in [2098]: #[1850, 1927, 1975, 2022, 2030, 2057, 2100]: #Years_all[195:
                 Pop_country_raster = Pop_country_raster[:,1:]
                 GDP_country_raster = GDP_country_raster[:,1:]
                 FA_country_raster = FA_country_raster[:,1:]
-                country_mask = country_mask[:,1:]
             else:
                 location_save = location + [-1,108,0,0]
-            Pop_country_raster[np.isnan(Pop_country_raster)] = np.nan
-            GDP_country_raster[np.isnan(GDP_country_raster)] = np.nan
-            FA_country_raster[np.isnan(FA_country_raster)] = np.nan
-            # save results into the output raster
-            suffix = str(year) + '_SSP' + str(s + 1) + file_ending if scenarios == 5 else str(year) + file_ending
-            save_raster_data(Compass_path + 'Pop_' + suffix, location_save, country_mask, Pop_country_raster)
-            save_raster_data(Compass_path + 'GDP_' + suffix, location_save, country_mask, GDP_country_raster)
-            save_raster_data(Compass_path + 'FA_' + suffix, location_save, country_mask, FA_country_raster)
+
+            # save data and aggregate resolution if necessary
+            for r in Resolutions:
+                base_suffix = str(year) + '_' + str(r)
+                suffix = base_suffix + '_SSP' + str(s + 1) + end_suffix if scenarios == 5 else base_suffix + end_suffix
+                save_raster_data(Compass_path + 'Pop_' + suffix, location_save, Pop_country_raster, r)
+                save_raster_data(Compass_path + 'GDP_' + suffix, location_save, GDP_country_raster, r)
+                save_raster_data(Compass_path + 'FA_' + suffix, location_save, FA_country_raster, r)
