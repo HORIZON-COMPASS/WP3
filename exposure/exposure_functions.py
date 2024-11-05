@@ -1,5 +1,5 @@
 import numpy as np
-import rasterio, os
+import rasterio, os, shutil
 from copulas.bivariate import Frank
 from rasterio import Affine
 from rasterio.windows import Window
@@ -91,13 +91,23 @@ def write_empty_raster(output_profile, full_filename, resolution):
     dimensions = [output_profile.data['height'], output_profile.data['width']]
 
     if os.path.isfile(full_filename):
-        os.remove(full_filename)
+        #
         print(full_filename + " already exists")
     else:
         empty_data = np.zeros(dimensions, dtype = np.float32)
         with rasterio.Env():
             with rasterio.open(full_filename, 'w', **output_profile) as dst:
                 dst.write(empty_data, 1)
+
+def copy_empty(empty_raster, Compass_path, suffix):
+
+    vars = ['Pop_', 'GDP_', 'FA_']
+
+    for v in vars:
+        full_filename = Compass_path + 'Pop_' + suffix
+        if os.path.isfile(full_filename):
+            os.remove(full_filename)
+        shutil.copy(empty_raster, Compass_path + v + suffix)
 
 def load_country_mask(country_vector, c, country_dataset):
 

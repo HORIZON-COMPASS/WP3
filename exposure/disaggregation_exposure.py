@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 import geopandas as gp
-import shutil, rasterio, sys
+import rasterio, sys
 from exposure_functions import (write_empty_raster, load_country_mask, save_raster_data, load_ghsl_data,
-                                load_hyde_data, load_ssp_data, aggregate_data)
+                                load_hyde_data, load_ssp_data, copy_empty)
 
 ## PARAMETERS
 Resolutions = [30, 1800] # has to be in arc seconds and multiplier of 30 arc seconds
@@ -48,7 +48,7 @@ for r in Resolutions:
     write_empty_raster(base_profile, empty_file, r)
 
 # create disaggregation
-for year in Years_all: #[1930]: # #[1850, 1927, 1975, 2022, 2030, 2057, 2100]: #
+for year in [1931]: #Years_all: # #[1850, 1927, 1975, 2022, 2030, 2057, 2100]: #
     print(str(year))
     if year > 2020:
         end_suffix = '_' + Harmonize + '.tif'
@@ -64,9 +64,7 @@ for year in Years_all: #[1930]: # #[1850, 1927, 1975, 2022, 2030, 2057, 2100]: #
             empty_raster = Compass_path + 'Admin/Empty_raster_' + str(r) + '.tif'
             base_suffix = str(year) + '_' + str(r)
             suffix = base_suffix + '_SSP' + str(s + 1) + end_suffix if scenarios == 5 else base_suffix + end_suffix
-            shutil.copy(empty_raster, Compass_path + 'Pop_' + suffix)
-            shutil.copy(empty_raster, Compass_path + 'GDP_' + suffix)
-            shutil.copy(empty_raster, Compass_path + 'FA_' + suffix)
+            copy_empty(empty_raster, Compass_path, suffix)
 
     # Iterate by country
     for c in Pop_data[1].index: #[242,674,242,674,492]: #
