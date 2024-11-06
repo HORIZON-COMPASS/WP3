@@ -48,7 +48,7 @@ for r in Resolutions:
     write_empty_raster(base_profile, empty_file, r)
 
 # create disaggregation
-for year in [1931]: #Years_all: # #[1850, 1927, 1975, 2022, 2030, 2057, 2100]: #
+for year in list(range(2023,2101)): #Years_all: # #[1850, 1927, 1975, 2022, 2030, 2057, 2100]: #
     print(str(year))
     if year > 2020:
         end_suffix = '_' + Harmonize + '.tif'
@@ -89,7 +89,7 @@ for year in [1931]: #Years_all: # #[1850, 1927, 1975, 2022, 2030, 2057, 2100]: #
                 ghsl_pop_year = ghsl_pop_year * hyde_factor
                 ghsl_bld_year = ghsl_bld_year * hyde_factor
 
-        for s in [1]: #np.arange(0, scenarios):
+        for s in np.arange(0, scenarios):
             if year > Years_ssp[0]:
                 # Wang SSP data
                 ssp_pop_year, ssp_pop_base = load_ssp_data(year, Years_ssp, Raster_path, location, country_mask, s)
