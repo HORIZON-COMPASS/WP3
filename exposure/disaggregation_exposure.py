@@ -67,10 +67,10 @@ for year in list(range(2023,2101)): #Years_all: # #[1850, 1927, 1975, 2022, 2030
             copy_empty(empty_raster, Compass_path, suffix)
 
     # Iterate by country
-    for c in Pop_data[1].index: #[242,674,242,674,492]: #
-        print(Pop_data[1]['ISO3'][c])
+    for c in Pop_data[0].index: #[242,674,242,674,492]: #
+        print(Pop_data[0]['ISO3'][c])
 
-        if Pop_data[1][str(year)][c] == 0:
+        if Pop_data[0][str(year)][c] == 0:
             continue
 
         # Load data by country
