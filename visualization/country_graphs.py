@@ -3,11 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 ## PARAMETERS
-Resolutions = [30, 1800] # has to be in arc seconds and multiplier of 30 arc seconds
 Harmonize = 'yes' # 'yes' or 'no'
 Last_hist_year = 2022 # last year of historical data
-Compass_path = 'C:/HANZE2_products/Compass_exposure/' #
-Raster_path = 'C:/HANZE2_temp/COMPASS_Exposure/' #
+Compass_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_products/Compass_exposure/' #
+Raster_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_temp/COMPASS_Exposure/' #
 
 # Define timespans
 Years_all = list(range(1850,2101))
