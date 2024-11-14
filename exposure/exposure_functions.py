@@ -153,7 +153,7 @@ def aggregate_data(data, location, r):
         factor = r / 30
         col_off = np.divmod(location[0], factor)
         row_off = np.divmod(location[1], factor)
-        width = np.divmod(location[2] + col_off[1], factor)[0] + 1 if location[2] < 43200 else 720
+        width = np.divmod(location[2] + col_off[1], factor)[0] + 1 if location[2] < 43200 else 43200 / factor
         height = np.divmod(location[3] + row_off[1], factor)[0] + 1
         data_z = np.zeros([int((height) * factor), int((width) * factor)])
         data_z[int(row_off[1]):int(row_off[1]+location[3]), int(col_off[1]):int(col_off[1]+location[2])] = data

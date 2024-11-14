@@ -48,7 +48,7 @@ for r in Resolutions:
     write_empty_raster(base_profile, empty_file, r)
 
 # create disaggregation
-for year in list(range(2023,2101)): #Years_all: # #[1850, 1927, 1975, 2022, 2030, 2057, 2100]: #
+for year in Years_all: #list(range(2023,2101)): # #[1850, 1927, 1975, 2022, 2030, 2057, 2100]: #
     print(str(year))
     if year > 2020:
         end_suffix = '_' + Harmonize + '.tif'
@@ -131,5 +131,5 @@ for year in list(range(2023,2101)): #Years_all: # #[1850, 1927, 1975, 2022, 2030
                 base_suffix = str(year) + '_' + str(r)
                 suffix = base_suffix + '_SSP' + str(s + 1) + end_suffix if scenarios == 5 else base_suffix + end_suffix
                 save_raster_data(Compass_path + 'Pop_' + suffix, location_save, Pop_country_raster, r)
-                save_raster_data(Compass_path + 'GDP_' + suffix, location_save, GDP_country_raster, r)
-                save_raster_data(Compass_path + 'FA_' + suffix, location_save, FA_country_raster, r)
+                #save_raster_data(Compass_path + 'GDP_' + suffix, location_save, GDP_country_raster, r)
+                #save_raster_data(Compass_path + 'FA_' + suffix, location_save, FA_country_raster, r)
