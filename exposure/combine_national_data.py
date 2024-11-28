@@ -11,9 +11,10 @@ if Harmonize == 'yes':
 else:
     Last_hist_year_pop = 2020 # last year of historical population data
     Last_hist_year_eco = 2020 # last year of historical economic data
+Last_hist_year_regio = 2023 # last year of historical subnational GDP per capita data
 Last_weo_year = 2029 # last year for which WEO projections are available
 Base_SSP_year = 2020 # base year of SSP projections
-Compass_path = '/p/tmp/dominikp/COMPASS/Exposure/National_data/' #'C:/HANZE2_products/Compass_exposure/National_data/' #
+Compass_path = 'C:/HANZE2_products/Compass_exposure/National_data/' #'/p/tmp/dominikp/COMPASS/Exposure/National_data/' #
 
 ## Input national timeseries historical
 National_data_hist_file = Compass_path + 'National_exposure_all.xlsx'
@@ -49,10 +50,10 @@ Combined_data_dz = prepare_fixed_asset_data(FA_raw, GDPpc_hist)
 copula_assets, copula_samples = copula_fit_frank(Combined_data_dz)
 
 ## combine national timeseries
-Pop_combined = np.ones([5, len(Countries), len(range(1850,2101))]) * -1
-GDPpc_combined = np.ones([5, len(Countries), len(range(1850,2101))]) * -1
-GDP_combined = np.ones([5, len(Countries), len(range(1850,2101))]) * -1
-FA_combined = np.ones([5, len(Countries), len(range(1850,2101))]) * -1
+Pop_combined = np.ones([5, len(Countries), len(Years_all)]) * -1
+GDPpc_combined = np.ones([5, len(Countries), len(Years_all)]) * -1
+GDP_combined = np.ones([5, len(Countries), len(Years_all)]) * -1
+FA_combined = np.ones([5, len(Countries), len(Years_all)]) * -1
 for kc, c in enumerate(Pop_hist.index):
     print(str(Pop_hist.loc[c,'Name']))
 
@@ -156,3 +157,23 @@ for s in range(0,5):
     FA_combined_df = pd.DataFrame(data=FA_combined[s, :, :], columns=Years_all,index=Pop_hist.index)
     FA_combined_dff = pd.concat([Pop_hist[['ISO3']], FA_combined_df], axis=1)
     FA_combined_dff.to_csv(Compass_path + 'FA_combined_SSP'+str(s+1)+'_'+Harmonize+'.csv', sep=',')
+
+### SUBNATIONAL DATA INTEGRATION
+## Input subnational GDP per capita
+GDPpc_regio = pd.read_excel(open(Compass_path + 'Subnational_exposure_all.xlsx', 'rb'),
+                            sheet_name='GDP_pc', index_col='Code')
+Years_hist_regio = list(range(1850, Last_hist_year_regio + 1))
+Years_hist_regio_n = np.array(range(1850, Last_hist_year_regio + 1))
+
+## gapfill subnational
+GDPpc_subnational = np.ones([len(GDPpc_regio.index), len(Years_all)]) * -1
+for kr, r in enumerate(GDPpc_regio.index):
+    R_GDPpc = GDPpc_regio.loc[r, Years_hist_regio].values.astype('float')
+    ixr = np.invert(np.isnan(R_GDPpc))
+    R_data = R_GDPpc[ixr]
+    GDPpc_subnational[kr, :] = interp1d(Years_hist_regio_n[ixr], R_data, bounds_error=False,
+                                        kind='linear', fill_value=(R_data[0], R_data[-1]))(Years_all)
+## save subnational data
+Regio_combined_df = pd.DataFrame(data=GDPpc_subnational, columns=Years_all, index=GDPpc_regio.index)
+Regio_combined_dff = pd.concat([GDPpc_regio[['Country', 'Name']], Regio_combined_df], axis=1)
+Regio_combined_dff.to_csv(Compass_path + 'GDPpc_subnational.csv', sep=',')

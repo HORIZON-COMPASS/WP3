@@ -3,14 +3,14 @@ import numpy as np
 import geopandas as gp
 import rasterio, sys
 from exposure_functions import (write_empty_raster, load_country_mask, save_raster_data, load_ghsl_data,
-                                load_hyde_data, load_ssp_data, copy_empty)
+                                load_hyde_data, load_ssp_data, copy_empty, disaggregate_subnational_GDP)
 
 ## PARAMETERS
 Resolutions = [30, 1800] # has to be in arc seconds and multiplier of 30 arc seconds
 Harmonize = 'yes' # 'yes' or 'no'
 Last_hist_year = 2022 # last year of historical data
-Compass_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_products/Compass_exposure/' #
-Raster_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_temp/COMPASS_Exposure/' #
+Compass_path = 'C:/HANZE2_products/Compass_exposure/' #'/p/tmp/dominikp/COMPASS/Exposure/' #
+Raster_path = 'C:/HANZE2_temp/COMPASS_Exposure/' #'/p/tmp/dominikp/COMPASS/Exposure/' #
 for r in Resolutions:
     if np.mod(r,30)!=0:
         sys.exit('Incorrect resolution inserted. Has to be a multiplier of 30 arc seconds')
@@ -36,8 +36,13 @@ for s in np.arange(0,5):
     FA_data[s] = pd.read_csv(Compass_path + 'National_data/FA_combined_SSP' + str(s + 1) + '_' + Harmonize + '.csv',
                               index_col='ISOn')
 
-# Load administrative map
+# Load subnational GDP per capita
+GDP_regio = pd.read_csv(Compass_path + 'National_data/GDPpc_subnational.csv', index_col='Code')
+Regio_coverage = np.unique(GDP_regio['Country'].values)
+
+# Load administrative maps
 country_dataset = rasterio.open(Compass_path + 'Admin/OSM_country_map.tif')
+subnational_dataset = rasterio.open(Compass_path + 'Admin/OSM_subnational_map.tif')
 country_vector = gp.read_file(Compass_path + 'Admin/Global_OSM_boundaries_2024_v4.shp')
 
 # prepare empty rasters
@@ -48,7 +53,7 @@ for r in Resolutions:
     write_empty_raster(base_profile, empty_file, r)
 
 # create disaggregation
-for year in Years_all: #list(range(2023,2101)): # #[1850, 1927, 1975, 2022, 2030, 2057, 2100]: #
+for year in [2018]: #Years_all: #list(range(2023,2101)): # #[1850, 1927, 1975, 2022, 2030, 2057, 2100]: #
     print(str(year))
     if year > 2020:
         end_suffix = '_' + Harmonize + '.tif'
@@ -67,7 +72,7 @@ for year in Years_all: #list(range(2023,2101)): # #[1850, 1927, 1975, 2022, 2030
             copy_empty(empty_raster, Compass_path, suffix)
 
     # Iterate by country
-    for c in Pop_data[0].index: #[242,674,242,674,492]: #
+    for c in [156,535,840]: #Pop_data[0].index: #[242,674,242,674,492]: #
         print(Pop_data[0]['ISO3'][c])
 
         if Pop_data[0][str(year)][c] == 0:
@@ -110,13 +115,25 @@ for year in Years_all: #list(range(2023,2101)): # #[1850, 1927, 1975, 2022, 2030
             # correct raster values according to national population data
             Pop_adjustment = (Pop_data[s][str(year)][c] * 1000) / ghsl_pop_year_total
             Pop_country_raster = ghsl_pop_year * Pop_adjustment
-            # disaggregate GDP value (60% by population, 40% by buildup area)
-            GDP_per_pop = GDP_data[s][str(year)][c] * 0.6 / ghsl_pop_year_total * 1E9
-            GDP_per_bld = GDP_data[s][str(year)][c] * 0.4 / ghsl_bld_year_total * 1E9
-            GDP_country_raster = ghsl_pop_year * GDP_per_pop + ghsl_bld_year * GDP_per_bld
-            # disaggregate fixed assets by buildup area
-            FA_per_bld = FA_data[s][str(year)][c] / ghsl_bld_year_total * 1E9
-            FA_country_raster = ghsl_bld_year * FA_per_bld
+            # compute subnational GDP distribution (if such data are available)
+            GDP_data_s_c_y = GDP_data[s][str(year)][c]
+            FA_data_s_c_y = FA_data[s][str(year)][c]
+            GDPpc_data_s_c_y = GDP_data_s_c_y / Pop_data[s][str(year)][c] * 1E9
+            if c in Regio_coverage:
+                GDP_regio_c = GDP_regio.loc[GDP_regio['Country']==c, str(year)]
+                GDP_country_raster, FA_country_raster = disaggregate_subnational_GDP(subnational_dataset, location,
+                                                                  country_mask, ghsl_pop_year, ghsl_bld_year,
+                                                                  GDP_regio_c, GDP_data_s_c_y, GDPpc_data_s_c_y,
+                                                                  FA_data_s_c_y)
+            else:
+                # disaggregate GDP value (60% by population, 40% by buildup area)
+                GDP_per_pop = GDP_data_s_c_y * 0.6 / ghsl_pop_year_total * 1E9
+                GDP_per_bld = GDP_data_s_c_y * 0.4 / ghsl_bld_year_total * 1E9
+                GDP_country_raster = ghsl_pop_year * GDP_per_pop + ghsl_bld_year * GDP_per_bld
+                # disaggregate fixed assets by buildup area
+                FA_per_bld = FA_data[s][str(year)][c] / ghsl_bld_year_total * 1E9
+                FA_country_raster = ghsl_bld_year * FA_per_bld
+
             # adapt data for saving
             if location[2]==43201:
                 location_save = location + [0,108,-1,0]
