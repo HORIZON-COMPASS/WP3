@@ -3,7 +3,7 @@ import os
 
 c = cdsapi.Client()
 
-years = range(1950,2024)
+years = range(2021,2024)
 months = range(1,13)
 
 for y in years:
@@ -17,7 +17,7 @@ for y in years:
                 'reanalysis-era5-land',
                 {
                     'variable': [
-                        '10m_u_component_of_wind', '10m_v_component_of_wind',
+                        '10m_u_component_of_wind', '10m_v_component_of_wind'
                     ],
                     'year': str(y),
                     'month': str(m),
@@ -36,7 +36,8 @@ for y in years:
                     'area': [
                         52, -6, 41, 10, ## France
                     ],
-                    'format': 'grib',
+                    'data_format': 'grib',
+                    'download_format': 'unarchived',
                 },
                 '/p/tmp/dominikp/COMPASS/Meteo_data/Wind_ERA5Land/ERA5Land_sfcWind_'+str(y)+'_'+str(m)+'.grib')
 
@@ -68,6 +69,7 @@ for y in years:
                     'area': [
                         52, -6, 41, 10, ## France
                     ],
-                    'format': 'grib',
+                    'data_format': 'grib',
+                    'download_format': 'unarchived',
                 },
                 '/p/tmp/dominikp/COMPASS/Meteo_data/Wind_ERA5/ERA5_sfcWind_'+str(y)+'_'+str(m)+'.grib')
