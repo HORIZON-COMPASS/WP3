@@ -3,7 +3,7 @@ import os
 
 c = cdsapi.Client()
 
-years = range(2021,2024)
+years = range(1950,2024)
 months = range(1,13)
 
 for y in years:
