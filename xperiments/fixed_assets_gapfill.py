@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
-from exposure_functions import copula_inference_Frank, copula_fit_frank, prepare_fixed_asset_data
+from exposure.exposure_functions import copula_inference_Frank, copula_fit_frank, prepare_fixed_asset_data
 
 ## Define input data
-exposure_file = 'C:/HANZE2_products/Compass_exposure/National_exposure_all.xlsx'
+exposure_file = 'C:/HANZE2_products/Compass_exposure/National_data/National_exposure_all.xlsx'
 Fixed_asset_raw = pd.read_excel(open(exposure_file, 'rb'), sheet_name='Fixed_assets_to_GDP_raw', index_col='ISOn')
 GDPpc = pd.read_excel(open(exposure_file, 'rb'), sheet_name='GDP_per_capita_2017$', index_col='ISOn')
 Countries = range(0,248)

@@ -3,11 +3,11 @@ import numpy as np
 from exposure_functions import copula_fit_frank, prepare_fixed_asset_data, fixed_asset_estimate
 from scipy.interpolate import interp1d
 
-## PARAMETRS
-Harmonize = 'no'
+## PARAMETERS
+Harmonize = 'yes'
 if Harmonize == 'yes':
     Last_hist_year_pop = 2023 # last year of historical population data
-    Last_hist_year_eco = 2022 # last year of historical economic data
+    Last_hist_year_eco = 2023 # last year of historical economic data
 else:
     Last_hist_year_pop = 2020 # last year of historical population data
     Last_hist_year_eco = 2020 # last year of historical economic data
@@ -168,11 +168,12 @@ Years_hist_regio_n = np.array(range(1850, Last_hist_year_regio + 1))
 ## gapfill subnational
 GDPpc_subnational = np.ones([len(GDPpc_regio.index), len(Years_all)]) * -1
 for kr, r in enumerate(GDPpc_regio.index):
-    R_GDPpc = GDPpc_regio.loc[r, Years_hist_regio].values.astype('float')
+    R_GDPpc = GDPpc_regio.values[kr, 5:5+len(Years_hist_regio)].astype('float')
     ixr = np.invert(np.isnan(R_GDPpc))
     R_data = R_GDPpc[ixr]
     GDPpc_subnational[kr, :] = interp1d(Years_hist_regio_n[ixr], R_data, bounds_error=False,
                                         kind='linear', fill_value=(R_data[0], R_data[-1]))(Years_all)
+    print(r)
 ## save subnational data
 Regio_combined_df = pd.DataFrame(data=GDPpc_subnational, columns=Years_all, index=GDPpc_regio.index)
 Regio_combined_dff = pd.concat([GDPpc_regio[['Country', 'Name']], Regio_combined_df], axis=1)
