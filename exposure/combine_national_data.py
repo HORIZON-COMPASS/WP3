@@ -161,19 +161,19 @@ for s in range(0,5):
 ### SUBNATIONAL DATA INTEGRATION
 ## Input subnational GDP per capita
 GDPpc_regio = pd.read_excel(open(Compass_path + 'Subnational_exposure_all.xlsx', 'rb'),
-                            sheet_name='GDP_pc', index_col='Code')
+                            sheet_name='GDP_pc')
 Years_hist_regio = list(range(1850, Last_hist_year_regio + 1))
 Years_hist_regio_n = np.array(range(1850, Last_hist_year_regio + 1))
 
 ## gapfill subnational
-GDPpc_subnational = np.ones([len(GDPpc_regio.index), len(Years_all)]) * -1
+GDPpc_subnational = np.ones([len(GDPpc_regio.Code), len(Years_all)]) * -1
 for kr, r in enumerate(GDPpc_regio.index):
-    R_GDPpc = GDPpc_regio.values[kr, 5:5+len(Years_hist_regio)].astype('float')
+    R_GDPpc = GDPpc_regio.values[kr, 5:].astype('float')
     ixr = np.invert(np.isnan(R_GDPpc))
     R_data = R_GDPpc[ixr]
     GDPpc_subnational[kr, :] = interp1d(Years_hist_regio_n[ixr], R_data, bounds_error=False,
                                         kind='linear', fill_value=(R_data[0], R_data[-1]))(Years_all)
-    print(r)
+
 ## save subnational data
 Regio_combined_df = pd.DataFrame(data=GDPpc_subnational, columns=Years_all, index=GDPpc_regio.index)
 Regio_combined_dff = pd.concat([GDPpc_regio[['Country', 'Name']], Regio_combined_df], axis=1)
