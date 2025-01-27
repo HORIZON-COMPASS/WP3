@@ -175,6 +175,6 @@ for kr, r in enumerate(GDPpc_regio.index):
                                         kind='linear', fill_value=(R_data[0], R_data[-1]))(Years_all)
 
 ## save subnational data
-Regio_combined_df = pd.DataFrame(data=GDPpc_subnational, columns=Years_all, index=GDPpc_regio.index)
-Regio_combined_dff = pd.concat([GDPpc_regio[['Country', 'Name']], Regio_combined_df], axis=1)
+Regio_combined_df = pd.DataFrame(data=GDPpc_subnational, columns=Years_all)
+Regio_combined_dff = pd.concat([GDPpc_regio[['Code', 'Country', 'Name']], Regio_combined_df], axis=1)
 Regio_combined_dff.to_csv(Compass_path + 'GDPpc_subnational.csv', sep=',')

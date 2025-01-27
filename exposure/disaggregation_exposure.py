@@ -8,7 +8,7 @@ from exposure_functions import (write_empty_raster, load_country_mask, save_rast
 ## PARAMETERS
 Resolutions = [30, 1800] # has to be in arc seconds and multiplier of 30 arc seconds
 Harmonize = 'yes' # 'yes' or 'no'
-Last_hist_year = 2022 # last year of historical data
+Last_hist_year = 2023 # last year of historical data
 Compass_path = 'C:/HANZE2_products/Compass_exposure/' #'/p/tmp/dominikp/COMPASS/Exposure/' #
 Raster_path = 'C:/HANZE2_temp/COMPASS_Exposure/' #'/p/tmp/dominikp/COMPASS/Exposure/' #
 for r in Resolutions:
@@ -37,7 +37,7 @@ for s in np.arange(0,5):
                               index_col='ISOn')
 
 # Load subnational GDP per capita
-GDP_regio = pd.read_csv(Compass_path + 'National_data/GDPpc_subnational.csv', index_col='Code')
+GDP_regio = pd.read_csv(Compass_path + 'National_data/GDPpc_subnational.csv')
 Regio_coverage = np.unique(GDP_regio['Country'].values)
 
 # Load administrative maps
@@ -53,7 +53,7 @@ for r in Resolutions:
     write_empty_raster(base_profile, empty_file, r)
 
 # create disaggregation
-for year in [2018]: #Years_all: #list(range(2023,2101)): # #[1850, 1927, 1975, 2022, 2030, 2057, 2100]: #
+for year in Years_all: #list(range(2023,2101)):
     print(str(year))
     if year > 2020:
         end_suffix = '_' + Harmonize + '.tif'
@@ -72,7 +72,7 @@ for year in [2018]: #Years_all: #list(range(2023,2101)): # #[1850, 1927, 1975, 2
             copy_empty(empty_raster, Compass_path, suffix)
 
     # Iterate by country
-    for c in [156,535,840]: #Pop_data[0].index: #[242,674,242,674,492]: #
+    for c in Pop_data[0].index:
         print(Pop_data[0]['ISO3'][c])
 
         if Pop_data[0][str(year)][c] == 0:
@@ -120,10 +120,10 @@ for year in [2018]: #Years_all: #list(range(2023,2101)): # #[1850, 1927, 1975, 2
             FA_data_s_c_y = FA_data[s][str(year)][c]
             GDPpc_data_s_c_y = GDP_data_s_c_y / Pop_data[s][str(year)][c] * 1E9
             if c in Regio_coverage:
-                GDP_regio_c = GDP_regio.loc[GDP_regio['Country']==c, str(year)]
+                GDP_regio_c = GDP_regio.loc[GDP_regio['Country']==c, ].set_index(['Code'])
                 GDP_country_raster, FA_country_raster = disaggregate_subnational_GDP(subnational_dataset, location,
                                                                   country_mask, ghsl_pop_year, ghsl_bld_year,
-                                                                  GDP_regio_c, GDP_data_s_c_y, GDPpc_data_s_c_y,
+                                                                  GDP_regio_c[str(year)], GDP_data_s_c_y, GDPpc_data_s_c_y,
                                                                   FA_data_s_c_y)
             else:
                 # disaggregate GDP value (60% by population, 40% by buildup area)
