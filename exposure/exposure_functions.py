@@ -372,13 +372,14 @@ def disaggregate_subnational_GDP(subnational_dataset, location, country_mask, gh
         FA_per_bld = Regio_FA[kr] / Regio_bld[kr] * 1E9
         FA_country_raster[ixr] += ghsl_bld_year[ixr] * FA_per_bld
 
-    # disaggregate GDP and fixed assets for areas outside defined regions
-    ixr = np.isin(country_regions, GDP_regio_c.index, invert=True)
-    GDP_per_pop = Regio_GDP_ii[-1] * 0.6 / Regio_pop[-1] * 1E9
-    GDP_per_bld = Regio_GDP_ii[-1] * 0.4 / Regio_bld[-1] * 1E9
-    GDP_country_raster[ixr] += ghsl_pop_year[ixr] * GDP_per_pop + ghsl_bld_year[ixr] * GDP_per_bld
-    # disaggregate fixed assets by buildup area
-    FA_per_bld = Regio_FA[-1] / Regio_bld[-1] * 1E9
-    FA_country_raster[ixr] += ghsl_bld_year[ixr] * FA_per_bld
+    if (Regio_pop[-1] > 0) & (Regio_bld[-1] > 0):
+        # disaggregate GDP and fixed assets for areas outside defined regions
+        ixr = np.isin(country_regions, GDP_regio_c.index, invert=True)
+        GDP_per_pop = Regio_GDP_ii[-1] * 0.6 / Regio_pop[-1] * 1E9
+        GDP_per_bld = Regio_GDP_ii[-1] * 0.4 / Regio_bld[-1] * 1E9
+        GDP_country_raster[ixr] += ghsl_pop_year[ixr] * GDP_per_pop + ghsl_bld_year[ixr] * GDP_per_bld
+        # disaggregate fixed assets by buildup area
+        FA_per_bld = Regio_FA[-1] / Regio_bld[-1] * 1E9
+        FA_country_raster[ixr] += ghsl_bld_year[ixr] * FA_per_bld
 
     return GDP_country_raster, FA_country_raster
