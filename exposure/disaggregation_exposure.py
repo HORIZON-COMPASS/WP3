@@ -9,7 +9,7 @@ from exposure_functions import (write_empty_raster, load_country_mask, save_rast
 Resolutions = [30, 1800] # has to be in arc seconds and multiplier of 30 arc seconds
 Harmonize = 'yes' # 'yes' or 'no'
 Last_hist_year = 2023 # last year of historical data
-Compass_path = 'C:/HANZE2_products/Compass_exposure/' #'/p/tmp/dominikp/COMPASS/Exposure/' #
+Compass_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_products/Compass_exposure/' #
 Raster_path = 'C:/HANZE2_temp/COMPASS_Exposure/' #'/p/tmp/dominikp/COMPASS/Exposure/' #
 for r in Resolutions:
     if np.mod(r,30)!=0:
@@ -53,10 +53,10 @@ for r in Resolutions:
     write_empty_raster(base_profile, empty_file, r)
 
 # create disaggregation
-for year in Years_all: #list(range(2023,2101)):
+for year in Years_all:
     print(str(year))
     if year > 2020:
-        end_suffix = '_' + Harmonize + '.tif'
+        end_suffix = '_harmonized.tif' if Harmonize == 'yes' else '_not_harm.tif'
     else:
         end_suffix = '.tif'
 

@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 ## PARAMETERS
 Harmonize = 'yes' # 'yes' or 'no'
 Last_hist_year = 2023 # last year of historical data
-Compass_path = 'C:/HANZE2_products/Compass_exposure/' #'/p/tmp/dominikp/COMPASS/Exposure/' #
-Raster_path = 'C:/HANZE2_temp/COMPASS_Exposure/' # '/p/tmp/dominikp/COMPASS/Exposure/' #
+Compass_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_products/Compass_exposure/' #
+Raster_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_temp/COMPASS_Exposure/' #
 
 # Define timespans
 Years_all = list(range(1850,2101))
