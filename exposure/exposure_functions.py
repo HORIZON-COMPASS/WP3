@@ -101,7 +101,7 @@ def write_empty_raster(output_profile, full_filename, resolution):
 
 def copy_empty(empty_raster, Compass_path, suffix):
 
-    vars = ['Pop_', 'GDP_', 'FA_']
+    vars = ['Outputs/Population/Pop_', 'Outputs/GDP/GDP_', 'Outputs/Fixed_asset_value/FA_']
 
     for v in vars:
         full_filename = Compass_path + v + suffix
