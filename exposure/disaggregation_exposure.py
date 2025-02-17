@@ -28,12 +28,13 @@ Years_select = Years_hist if Harmonize == 'yes' else Years_hist_ssp
 Pop_data = dict()
 GDP_data = dict()
 FA_data = dict()
+Harmonize_suffix = '_harmonized' if Harmonize == 'yes' else '_not_harm'
 for s in np.arange(0,5):
-    Pop_data[s] = pd.read_csv(Compass_path + 'National_data/Pop_combined_SSP' + str(s + 1) + '_' + Harmonize + '.csv',
+    Pop_data[s] = pd.read_csv(Compass_path + 'National_data/Pop_combined_SSP' + str(s + 1) + Harmonize_suffix + '.csv',
                               index_col='ISOn')
-    GDP_data[s] = pd.read_csv(Compass_path + 'National_data/GDP_combined_SSP' + str(s + 1) + '_' + Harmonize + '.csv',
+    GDP_data[s] = pd.read_csv(Compass_path + 'National_data/GDP_combined_SSP' + str(s + 1) + Harmonize_suffix + '.csv',
                               index_col='ISOn')
-    FA_data[s] = pd.read_csv(Compass_path + 'National_data/FA_combined_SSP' + str(s + 1) + '_' + Harmonize + '.csv',
+    FA_data[s] = pd.read_csv(Compass_path + 'National_data/FA_combined_SSP' + str(s + 1) + Harmonize_suffix + '.csv',
                               index_col='ISOn')
 
 # Load subnational GDP per capita
@@ -56,7 +57,7 @@ for r in Resolutions:
 for year in Years_all:
     print(str(year))
     if year > 2020:
-        end_suffix = '_harmonized.tif' if Harmonize == 'yes' else '_not_harm.tif'
+        end_suffix = Harmonize_suffix + '.tif'
     else:
         end_suffix = '.tif'
 

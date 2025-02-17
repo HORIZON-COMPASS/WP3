@@ -147,16 +147,17 @@ for kc, c in enumerate(Pop_hist.index):
         FA_combined[s, kc, :] = GDP_combined[s, kc, :] * C_FA_estimate
 
 # save timeseries
+Harmonize_suffix = '_harmonized' if Harmonize == 'yes' else '_not_harm'
 for s in range(0,5):
     Pop_combined_df = pd.DataFrame(data=Pop_combined[s, :, :], columns=Years_all,index=Pop_hist.index)
     Pop_combined_dff = pd.concat([Pop_hist[['ISO3']], Pop_combined_df], axis=1)
-    Pop_combined_dff.to_csv(Compass_path + 'Pop_combined_SSP'+str(s+1)+'_'+Harmonize+'.csv', sep=',')
+    Pop_combined_dff.to_csv(Compass_path + 'Pop_combined_SSP' + str(s + 1) + Harmonize_suffix + '.csv', sep=',')
     GDP_combined_df = pd.DataFrame(data=GDP_combined[s, :, :], columns=Years_all,index=Pop_hist.index)
     GDP_combined_dff = pd.concat([Pop_hist[['ISO3']], GDP_combined_df], axis=1)
-    GDP_combined_dff.to_csv(Compass_path + 'GDP_combined_SSP'+str(s+1)+'_'+Harmonize+'.csv', sep=',')
+    GDP_combined_dff.to_csv(Compass_path + 'GDP_combined_SSP' + str(s + 1) + Harmonize_suffix + '.csv', sep=',')
     FA_combined_df = pd.DataFrame(data=FA_combined[s, :, :], columns=Years_all,index=Pop_hist.index)
     FA_combined_dff = pd.concat([Pop_hist[['ISO3']], FA_combined_df], axis=1)
-    FA_combined_dff.to_csv(Compass_path + 'FA_combined_SSP'+str(s+1)+'_'+Harmonize+'.csv', sep=',')
+    FA_combined_dff.to_csv(Compass_path + 'FA_combined_SSP' + str(s + 1) + Harmonize_suffix + '.csv', sep=',')
 
 ### SUBNATIONAL DATA INTEGRATION
 ## Input subnational GDP per capita
