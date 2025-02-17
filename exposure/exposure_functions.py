@@ -6,6 +6,12 @@ from rasterio.windows import Window
 from scipy.stats import rankdata
 from scipy.ndimage import zoom
 
+def define_main_path():
+
+    MAIN_PATH = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_temp/Compass_exposure/'  #
+
+    return MAIN_PATH
+
 def prepare_fixed_asset_data(Fixed_asset_raw, GDPpc):
 
     Select_years = [3, 13, 23, 33, 43, 53, 66, 73, 82, 91, 103, 113, 123, 133, 143, 153, 163, 172]
@@ -101,7 +107,7 @@ def write_empty_raster(output_profile, full_filename, resolution):
 
 def copy_empty(empty_raster, Compass_path, suffix):
 
-    vars = ['Outputs/Population/Pop_', 'Outputs/GDP/GDP_', 'Outputs/Fixed_asset_value/FA_']
+    vars = ['Population/Pop_', 'GDP/GDP_', 'Fixed_asset_value/FA_']
 
     for v in vars:
         full_filename = Compass_path + v + suffix

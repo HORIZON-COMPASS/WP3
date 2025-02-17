@@ -1,18 +1,26 @@
 import pandas as pd
 import numpy as np
-from exposure.exposure_functions import copula_inference_Frank, copula_fit_frank, prepare_fixed_asset_data
+from exposure.exposure_functions import (copula_inference_Frank, copula_fit_frank,
+                                         prepare_fixed_asset_data, define_main_path)
 
-## Define input data
-exposure_file = 'C:/HANZE2_products/Compass_exposure/National_data/National_exposure_all.xlsx'
-Fixed_asset_raw = pd.read_excel(open(exposure_file, 'rb'), sheet_name='Fixed_assets_to_GDP_raw', index_col='ISOn')
-GDPpc = pd.read_excel(open(exposure_file, 'rb'), sheet_name='GDP_per_capita_2017$', index_col='ISOn')
+## SET MAIN DATA PATH
+MAIN_PATH = define_main_path()
+
+## Paths to input and output data and main variables
 Countries = range(0,248)
 Years = range(1850,2024)
+Inputs_path = MAIN_PATH + 'Inputs/National_data/'
+Outputs_path = MAIN_PATH + 'Outputs/National_timeseries/'
+
+### Load national exposure datase
+exposure_file = Inputs_path + 'National_exposure_all.xlsx'
+Fixed_asset_raw = pd.read_excel(open(exposure_file, 'rb'), sheet_name='Fixed_assets_to_GDP_raw', index_col='ISOn')
+GDPpc = pd.read_excel(open(exposure_file, 'rb'), sheet_name='GDP_per_capita_2017$', index_col='ISOn')
 
 ### Prepare fixed asset data
 Combined_data_dz = prepare_fixed_asset_data(Fixed_asset_raw, GDPpc)
 
-np.savetxt('C:/HANZE2_products/Compass_exposure/Fixed_asset_GDPpc.csv', Combined_data_dz, delimiter=",", fmt="%f")
+np.savetxt(Outputs_path + 'Fixed_asset_GDPpc.csv', Combined_data_dz, delimiter=",", fmt="%f")
 
 ### Fit Frank copula to the data
 copula_assets, copula_samples = copula_fit_frank(Combined_data_dz)
@@ -41,4 +49,4 @@ for c in Countries:
 
 Fixed_asset_pred_df = pd.DataFrame(data=Fixed_asset_pred, columns=Fixed_asset_raw.columns[3:],index=Fixed_asset_raw.index)
 Fixed_asset_filled = pd.concat([Fixed_asset_raw[['ISO2','ISO3','Name']],Fixed_asset_pred_df], axis=1)
-Fixed_asset_filled.to_csv('C:/HANZE2_products/Compass_exposure/Fixed_asset_prediction_historical.csv', sep=',')
+Fixed_asset_filled.to_csv(Outputs_path + 'Fixed_asset_prediction_historical.csv', sep=',')

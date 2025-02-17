@@ -1,12 +1,18 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from exposure.exposure_functions import define_main_path
+
+## SET MAIN DATA PATH
+MAIN_PATH = define_main_path()
 
 ## PARAMETERS
 Harmonize = 'yes' # 'yes' or 'no'
 Last_hist_year = 2023 # last year of historical data
-Compass_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_products/Compass_exposure/' #
-Raster_path = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_temp/COMPASS_Exposure/' #
+
+## Paths to input and output data
+Inputs_path = MAIN_PATH + 'Inputs/National_data/'
+Outputs_path = MAIN_PATH + 'Outputs/'
 
 # Define timespans
 Years_all = list(range(1850,2101))
@@ -19,13 +25,13 @@ GDP_data = dict()
 FA_data = dict()
 Harmonize_suffix = '_harmonized' if Harmonize == 'yes' else '_not_harm'
 for s in np.arange(0,5):
-    Pop_data[s] = pd.read_csv(Compass_path + 'National_data/Pop_combined_SSP' + str(s + 1) + Harmonize_suffix + '.csv',
+    Pop_data[s] = pd.read_csv(Outputs_path + 'National_timeseries/Pop_combined_SSP' + str(s + 1) + Harmonize_suffix + '.csv',
                               index_col='ISOn')
-    GDP_data[s] = pd.read_csv(Compass_path + 'National_data/GDP_combined_SSP' + str(s + 1) + Harmonize_suffix + '.csv',
+    GDP_data[s] = pd.read_csv(Outputs_path + 'National_timeseries/GDP_combined_SSP' + str(s + 1) + Harmonize_suffix + '.csv',
                               index_col='ISOn')
-    FA_data[s] = pd.read_csv(Compass_path + 'National_data/FA_combined_SSP' + str(s + 1) + Harmonize_suffix + '.csv',
+    FA_data[s] = pd.read_csv(Outputs_path + 'National_timeseries/FA_combined_SSP' + str(s + 1) + Harmonize_suffix + '.csv',
                               index_col='ISOn')
-Pop_hist = pd.read_excel(open(Compass_path + 'National_data/National_exposure_all.xlsx', 'rb'),
+Pop_hist = pd.read_excel(open(Inputs_path + 'National_exposure_all.xlsx', 'rb'),
                          sheet_name='Population', index_col='ISOn')
 
 # Graph information
@@ -40,6 +46,7 @@ Columns = Pop_data[0].columns[1:]
 Columns_ssp = Pop_data[0].columns[1+len(Years_hist):]
 for c in Pop_data[0].index:
     country_name = Pop_hist.loc[c,'Name']
+    print(country_name)
 
     fig, axs = plt.subplots(2, 5, constrained_layout=True, figsize=(20, 8))
     fig.suptitle(country_name, fontsize=14)
@@ -70,5 +77,5 @@ for c in Pop_data[0].index:
 
     axs[0, 1].legend()
 
-    plt.savefig(Raster_path  + 'Figures/InputData_'+ country_name +'.png', dpi=200)
+    plt.savefig(Outputs_path + 'Figures/InputData_'+ country_name +'.png', dpi=200)
     plt.close(fig)
