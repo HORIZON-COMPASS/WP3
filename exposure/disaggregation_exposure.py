@@ -53,7 +53,7 @@ for r in Resolutions:
     write_empty_raster(base_profile, empty_file, r)
 
 # create disaggregation
-for year in Years_all:
+for year in range(2052,2101): #Years_all:
     print(str(year))
     if year > 2020:
         end_suffix = '_harmonized.tif' if Harmonize == 'yes' else '_not_harm.tif'
@@ -147,6 +147,6 @@ for year in Years_all:
             for r in Resolutions:
                 base_suffix = str(year) + '_' + str(r)
                 suffix = base_suffix + '_SSP' + str(s + 1) + end_suffix if scenarios == 5 else base_suffix + end_suffix
-                save_raster_data(Compass_path + 'Pop_' + suffix, location_save, Pop_country_raster, r)
-                save_raster_data(Compass_path + 'GDP_' + suffix, location_save, GDP_country_raster, r)
-                save_raster_data(Compass_path + 'FA_' + suffix, location_save, FA_country_raster, r)
+                save_raster_data(Compass_path + 'Outputs/Population/Pop_' + suffix, location_save, Pop_country_raster, r)
+                save_raster_data(Compass_path + 'Outputs/GDP/GDP_' + suffix, location_save, GDP_country_raster, r)
+                save_raster_data(Compass_path + 'Outputs/Fixed_asset_value/FA_' + suffix, location_save, FA_country_raster, r)
