@@ -5,6 +5,7 @@ import rasterio, sys
 from exposure_functions import (write_empty_raster, load_country_mask, save_raster_data, load_ghsl_data,
                                 load_hyde_data, load_ssp_data, copy_empty, disaggregate_subnational_GDP)
 
+years = list(range(1850,1854)) + list(range(2021,2101))
 ## PARAMETERS
 Resolutions = [30, 1800] # has to be in arc seconds and multiplier of 30 arc seconds
 Harmonize = 'no' # 'yes' or 'no'
@@ -54,7 +55,7 @@ for r in Resolutions:
     write_empty_raster(base_profile, empty_file, r)
 
 # create disaggregation
-for year in Years_all:
+for year in list(range(1850,1854)) + list(range(2021,2101)): #Years_all:
     print(str(year))
     if year > 2020:
         end_suffix = Harmonize_suffix + '.tif'
