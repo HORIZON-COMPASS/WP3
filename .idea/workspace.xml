@@ -4,19 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5125ba19-96a7-41c6-821a-d3898ba2286e" name="Changes" comment="Update readme">
+    <list default="true" id="0d716f2e-5b65-46bb-a662-5ca688975a98" name="Changes" comment="Reconfigure paths, file references and parameters">
       <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
-  </component>
-  <component name="Git.Merge.Settings">
-    <option name="BRANCH" value="GitLab_WP3/main" />
-  </component>
-  <component name="Git.Rebase.Settings">
-    <option name="NEW_BASE" value="origin/main" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -45,30 +39,54 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/HORIZON-COMPASS/WP3.git&quot;,
+    &quot;url&quot;: &quot;https://github.com/HORIZON-COMPASS/WP3&quot;,
     &quot;accountId&quot;: &quot;0bf8fc75-ebec-4d56-a7c6-2dec7ad4e653&quot;
   }
 }</component>
   <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 7
+  &quot;associatedIndex&quot;: 6
 }</component>
-  <component name="ProjectId" id="2qIjrgXaOJewG1iefkb5KW8sfWF" />
+  <component name="ProjectId" id="2t4elVFi3kOWEVf8VFUgv9JIoTk" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;Python.country_graphs.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.combine_national_data.executor": "Run",
+    "Python.country_graphs.executor": "Run",
+    "Python.disaggregation_exposure.executor": "Debug",
+    "Python.fixed_assets_gapfill.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
-}</component>
-  <component name="RunManager">
+}]]></component>
+  <component name="RunManager" selected="Python.disaggregation_exposure">
+    <configuration name="combine_national_data" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="COMPASS_WP3" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/exposure" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/exposure/combine_national_data.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="country_graphs" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="WP3" />
+      <module name="COMPASS_WP3" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -89,9 +107,56 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="disaggregation_exposure" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="COMPASS_WP3" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/exposure" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/exposure/disaggregation_exposure.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="fixed_assets_gapfill" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="COMPASS_WP3" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/xperiments" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/xperiments/fixed_assets_gapfill.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.disaggregation_exposure" />
         <item itemvalue="Python.country_graphs" />
+        <item itemvalue="Python.fixed_assets_gapfill" />
+        <item itemvalue="Python.combine_national_data" />
       </list>
     </recent_temporary>
   </component>
@@ -105,57 +170,104 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="5125ba19-96a7-41c6-821a-d3898ba2286e" name="Changes" comment="" />
-      <created>1734357183132</created>
+      <changelist id="0d716f2e-5b65-46bb-a662-5ca688975a98" name="Changes" comment="" />
+      <created>1739615924868</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1734357183132</updated>
+      <updated>1739615924868</updated>
     </task>
-    <task id="LOCAL-00001" summary="venv update">
+    <task id="LOCAL-00001" summary="Clean-up">
       <option name="closed" value="true" />
-      <created>1734358287043</created>
+      <created>1739615969711</created>
       <option name="number" value="00001" />
       <option name="presentableId" value="LOCAL-00001" />
       <option name="project" value="LOCAL" />
-      <updated>1734358287043</updated>
+      <updated>1739615969711</updated>
     </task>
-    <task id="LOCAL-00002" summary="Update readme">
+    <task id="LOCAL-00002" summary="Update paths and settings">
       <option name="closed" value="true" />
-      <created>1737034925869</created>
+      <created>1739636742403</created>
       <option name="number" value="00002" />
       <option name="presentableId" value="LOCAL-00002" />
       <option name="project" value="LOCAL" />
-      <updated>1737034925869</updated>
+      <updated>1739636742403</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Update paths and settings cd.">
+      <option name="closed" value="true" />
+      <created>1739637655819</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1739637655819</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Update paths and settings">
+      <option name="closed" value="true" />
+      <created>1739777317117</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1739777317117</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Bugfix path">
+      <option name="closed" value="true" />
+      <created>1739777889652</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1739777889652</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Change settings (no harmonization)">
+      <option name="closed" value="true" />
+      <created>1739778436694</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1739778436694</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Change file name convention">
+      <option name="closed" value="true" />
+      <created>1739779301423</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1739779301423</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Change file name convention">
+      <option name="closed" value="true" />
+      <created>1739779862882</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1739779862882</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Change settings">
+      <option name="closed" value="true" />
+      <created>1739781357985</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1739781357985</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Reconfigure paths, file references and parameters">
+      <option name="closed" value="true" />
+      <created>1739806598339</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1739806598339</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State>
-              <option name="FILTERS">
-                <map>
-                  <entry key="branch">
-                    <value>
-                      <list>
-                        <option value="main" />
-                      </list>
-                    </value>
-                  </entry>
-                </map>
-              </option>
-            </State>
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="venv update" />
-    <MESSAGE value="Update readme" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update readme" />
+    <MESSAGE value="Clean-up" />
+    <MESSAGE value="Update paths and settings cd." />
+    <MESSAGE value="Update paths and settings" />
+    <MESSAGE value="Bugfix path" />
+    <MESSAGE value="Change settings (no harmonization)" />
+    <MESSAGE value="Change file name convention" />
+    <MESSAGE value="Change settings" />
+    <MESSAGE value="Reconfigure paths, file references and parameters" />
+    <option name="LAST_COMMIT_MESSAGE" value="Reconfigure paths, file references and parameters" />
   </component>
 </project>
