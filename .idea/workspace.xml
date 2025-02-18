@@ -4,12 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0d716f2e-5b65-46bb-a662-5ca688975a98" name="Changes" comment="Correct .idea">
+    <list default="true" id="0d716f2e-5b65-46bb-a662-5ca688975a98" name="Changes" comment="Update readme and user-defined parameters">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exposure/combine_national_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/exposure/combine_national_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exposure/disaggregation_exposure.py" beforeDir="false" afterPath="$PROJECT_DIR$/exposure/disaggregation_exposure.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/visualization/country_graphs.py" beforeDir="false" afterPath="$PROJECT_DIR$/visualization/country_graphs.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -268,7 +264,15 @@
       <option name="project" value="LOCAL" />
       <updated>1739806951884</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Update readme and user-defined parameters">
+      <option name="closed" value="true" />
+      <created>1739876505592</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1739876505592</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -304,6 +308,7 @@
     <MESSAGE value="Change settings" />
     <MESSAGE value="Reconfigure paths, file references and parameters" />
     <MESSAGE value="Correct .idea" />
-    <option name="LAST_COMMIT_MESSAGE" value="Correct .idea" />
+    <MESSAGE value="Update readme and user-defined parameters" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update readme and user-defined parameters" />
   </component>
 </project>
