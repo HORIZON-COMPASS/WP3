@@ -3,14 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from exposure.exposure_functions import define_main_path
 
-## SET MAIN DATA PATH
-MAIN_PATH = define_main_path()
-
-## PARAMETERS
+## USER-DEFINED PARAMETERS
 Harmonize = 'yes' # 'yes' or 'no'
+
+## Data availability
 Last_hist_year = 2023 # last year of historical data
 
 ## Paths to input and output data
+MAIN_PATH = define_main_path()
 Inputs_path = MAIN_PATH + 'Inputs/National_data/'
 Outputs_path = MAIN_PATH + 'Outputs/'
 

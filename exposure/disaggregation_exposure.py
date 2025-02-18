@@ -5,23 +5,25 @@ import rasterio, sys
 from exposure_functions import (write_empty_raster, load_country_mask, save_raster_data, load_ghsl_data, load_hyde_data,
                                  load_ssp_data, copy_empty, disaggregate_subnational_GDP, define_main_path)
 
-## SET MAIN DATA PATH
-MAIN_PATH = define_main_path()
-
-## PARAMETERS
+## USER-DEFINED PARAMETERS
 Harmonize = 'yes' # 'yes' or 'no'
-Last_hist_year = 2023 # last year of historical data
 Resolutions = [30, 1800] # has to be in arc seconds and multiplier of 30 arc seconds
+Timesteps = list(range(1850,2101)) # has to be a list of timesteps
+
+## Data availability
+Last_hist_year = 2023 # last year of historical data
+
+## Check if correct resolution was inserted
 for r in Resolutions:
     if np.mod(r,30)!=0:
         sys.exit('Incorrect resolution inserted. Has to be a multiplier of 30 arc seconds')
 
 ## Paths to input and output data
+MAIN_PATH = define_main_path()
 Inputs_path = MAIN_PATH + 'Inputs/'
 Outputs_path = MAIN_PATH + 'Outputs/'
 
 # Define timespans
-Years_all = [2034] #list(range(1850,2101))
 Years_hist = np.arange(1850,Last_hist_year+1)
 Years_hist_ssp = np.arange(1850,2021)
 Years_ghsl = np.arange(1975, 2035, 5) if Harmonize == 'yes' else np.arange(1975, 2025, 5)
@@ -59,7 +61,7 @@ for r in Resolutions:
     write_empty_raster(base_profile, empty_file, r)
 
 # create disaggregation
-for year in Years_all:
+for year in Timesteps:
     print(str(year))
     if year > 2020:
         end_suffix = Harmonize_suffix + '.tif'
@@ -78,7 +80,7 @@ for year in Years_all:
             copy_empty(empty_raster, Outputs_path, suffix)
 
     # Iterate by country
-    for c in [504]: #Pop_data[0].index:
+    for c in Pop_data[0].index:
         print(Pop_data[0]['ISO3'][c])
 
         if Pop_data[0][str(year)][c] == 0:
