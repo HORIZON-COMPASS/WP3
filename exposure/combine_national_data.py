@@ -3,11 +3,10 @@ import numpy as np
 from exposure_functions import copula_fit_frank, prepare_fixed_asset_data, fixed_asset_estimate, define_main_path
 from scipy.interpolate import interp1d
 
-## SET MAIN DATA PATH
-MAIN_PATH = define_main_path()
-
-## PARAMETERS
+## USER-DEFINED PARAMETERS
 Harmonize = 'yes' # 'yes' or 'no'
+
+## Data availability
 if Harmonize == 'yes':
     Last_hist_year_pop = 2023 # last year of historical population data
     Last_hist_year_eco = 2023 # last year of historical economic data
@@ -19,6 +18,7 @@ Last_weo_year = 2029 # last year for which WEO projections are available
 Base_SSP_year = 2020 # base year of SSP projections
 
 ## Paths to input and output data
+MAIN_PATH = define_main_path()
 Inputs_path = MAIN_PATH + 'Inputs/National_data/'
 Outputs_path = MAIN_PATH + 'Outputs/National_timeseries/'
 
