@@ -8,7 +8,7 @@ from scipy.ndimage import zoom
 
 def define_main_path():
 
-    MAIN_PATH = '/p/tmp/dominikp/COMPASS/Exposure/' #'C:/HANZE2_temp/Compass_exposure/'  #
+    MAIN_PATH = 'DEFINE_PATH_TO_DATA_HERE'
 
     return MAIN_PATH
 

@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0d716f2e-5b65-46bb-a662-5ca688975a98" name="Changes" comment="Update readme and user-defined parameters">
+    <list default="true" id="0d716f2e-5b65-46bb-a662-5ca688975a98" name="Changes" comment="Reconfigure paths, file references and parameters">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -306,9 +306,9 @@
     <MESSAGE value="Change settings (no harmonization)" />
     <MESSAGE value="Change file name convention" />
     <MESSAGE value="Change settings" />
-    <MESSAGE value="Reconfigure paths, file references and parameters" />
     <MESSAGE value="Correct .idea" />
     <MESSAGE value="Update readme and user-defined parameters" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update readme and user-defined parameters" />
+    <MESSAGE value="Reconfigure paths, file references and parameters" />
+    <option name="LAST_COMMIT_MESSAGE" value="Reconfigure paths, file references and parameters" />
   </component>
 </project>
